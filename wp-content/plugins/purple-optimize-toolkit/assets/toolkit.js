@@ -133,17 +133,33 @@
 	}
 
 	function setupCountdowns() {
+		const renderTimer = (output, remaining) => {
+			const parts = [
+				{ label: config.daysLabel || 'Days', value: Math.floor(remaining / 86400000) },
+				{ label: config.hoursLabel || 'Hours', value: Math.floor((remaining % 86400000) / 3600000) },
+				{ label: config.minutesLabel || 'Minutes', value: Math.floor((remaining % 3600000) / 60000) },
+				{ label: config.secondsLabel || 'Seconds', value: Math.floor((remaining % 60000) / 1000) },
+			];
+
+			if (!output.querySelector('.pot-timer-unit')) {
+				output.classList.add('pot-timer-grid');
+				output.innerHTML = parts.map((part, index) => `<span class="pot-timer-unit${index === 3 ? ' pot-timer-seconds' : ''}"><span class="pot-timer-value"></span><span class="pot-timer-label">${escapeHtml(part.label)}</span></span>`).join('<span class="pot-timer-separator" aria-hidden="true">:</span>');
+			}
+
+			output.querySelectorAll('.pot-timer-value').forEach((value, index) => {
+				value.textContent = String(parts[index].value).padStart(2, '0');
+			});
+			output.setAttribute('aria-label', parts.map((part) => `${part.value} ${part.label.toLowerCase()}`).join(', '));
+		};
+
 		const update = () => document.querySelectorAll('.pot-countdown').forEach((node) => {
 			const remaining = Math.max(0, new Date(node.dataset.end).getTime() - Date.now());
 			const output = node.querySelector('[data-countdown]');
 			if (!remaining) { node.remove(); return; }
-			const days = Math.floor(remaining / 86400000);
-			const hours = Math.floor((remaining % 86400000) / 3600000);
-			const minutes = Math.floor((remaining % 3600000) / 60000);
-			output.textContent = `${days}d ${hours}h ${minutes}m`;
+			renderTimer(output, remaining);
 		});
 		update();
-		window.setInterval(update, 60000);
+		window.setInterval(update, 1000);
 	}
 
 	function setupStickyCart() {
@@ -162,6 +178,26 @@
 		});
 	}
 
+	function setupSingleProductViewCart() {
+		if (!document.body.classList.contains('single-product') || !config.cartUrl) return;
+
+		const reveal = () => {
+			const addButton = document.querySelector('.single_add_to_cart_button') || document.querySelector('.wp-block-woocommerce-product-button button');
+			if (!addButton) return;
+			const container = addButton.closest('form.cart, .wp-block-woocommerce-product-button, .wp-block-woocommerce-add-to-cart-with-options') || addButton.parentElement;
+			if (!container || container.querySelector('.pot-view-cart-link')) return;
+			const link = document.createElement('a');
+			link.className = 'pot-view-cart-link';
+			link.href = config.cartUrl;
+			link.textContent = config.viewCart || 'View cart';
+			container.append(link);
+		};
+
+		document.body.addEventListener('wc-blocks_added_to_cart', reveal);
+		if (window.jQuery) window.jQuery(document.body).on('added_to_cart', reveal);
+		if (document.querySelector('.woocommerce-message .wc-forward, .woocommerce-notices-wrapper .wc-forward')) reveal();
+	}
+
 	function moveShippingProgress() {
 		const progress = document.querySelector('#pot-shipping-progress');
 		const target = document.querySelector('.wp-block-woocommerce-cart, .wc-block-cart, .wp-block-woocommerce-checkout, .wc-block-checkout');
@@ -171,12 +207,13 @@
 	function moveCheckoutEnhancements() {
 		const place = () => {
 			const checkout = document.querySelector('.wp-block-woocommerce-checkout, .wc-block-checkout');
+			const cart = document.querySelector('.wp-block-woocommerce-cart, .wc-block-cart');
 			const actions = document.querySelector('.wc-block-checkout__actions_row');
 			const inlineOffer = document.querySelector('.pot-inline-offer');
 			const trust = document.querySelector('.pot-checkout-trust');
 			const accountInvitation = document.querySelector('.pot-account-invitation');
 			if (inlineOffer && actions && inlineOffer.nextElementSibling !== actions) actions.parentNode.insertBefore(inlineOffer, actions);
-			if (trust && checkout && trust.nextElementSibling !== checkout) checkout.parentNode.insertBefore(trust, checkout);
+			if (trust && cart && trust.nextElementSibling !== cart) cart.parentNode.insertBefore(trust, cart);
 			if (accountInvitation) {
 				const receipt = document.querySelector('main .woocommerce-order, main .wp-block-woocommerce-order-confirmation-status, main');
 				if (receipt && accountInvitation.parentNode !== receipt) receipt.append(accountInvitation);
@@ -265,10 +302,20 @@
 				}
 				return false;
 			}
-			const hours = Math.floor(remaining / 3600000);
-			const minutes = Math.floor((remaining % 3600000) / 60000);
-			const seconds = Math.floor((remaining % 60000) / 1000);
-			output.textContent = `${hours ? `${hours}:` : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+			const parts = [
+				{ label: config.daysLabel || 'Days', value: Math.floor(remaining / 86400000) },
+				{ label: config.hoursLabel || 'Hours', value: Math.floor((remaining % 86400000) / 3600000) },
+				{ label: config.minutesLabel || 'Minutes', value: Math.floor((remaining % 3600000) / 60000) },
+				{ label: config.secondsLabel || 'Seconds', value: Math.floor((remaining % 60000) / 1000) },
+			];
+			if (!output.querySelector('.pot-timer-unit')) {
+				output.classList.add('pot-timer-grid');
+				output.innerHTML = parts.map((part, index) => `<span class="pot-timer-unit${index === 3 ? ' pot-timer-seconds' : ''}"><span class="pot-timer-value"></span><span class="pot-timer-label">${escapeHtml(part.label)}</span></span>`).join('<span class="pot-timer-separator" aria-hidden="true">:</span>');
+			}
+			output.querySelectorAll('.pot-timer-value').forEach((value, index) => {
+				value.textContent = String(parts[index].value).padStart(2, '0');
+			});
+			output.setAttribute('aria-label', parts.map((part) => `${part.value} ${part.label.toLowerCase()}`).join(', '));
 			return true;
 		};
 		if (!update()) return;
@@ -294,6 +341,7 @@
 		renderWishlistPage();
 		setupCountdowns();
 		setupStickyCart();
+		setupSingleProductViewCart();
 		moveShippingProgress();
 		moveCheckoutEnhancements();
 		labelCheckoutFields();

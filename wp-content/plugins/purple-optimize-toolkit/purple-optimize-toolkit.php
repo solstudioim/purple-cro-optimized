@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.4.1
+ * Version: 0.5.0
  * Requires at least: 6.7
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.4.1' );
+define( 'POT_VERSION', '0.5.0' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -249,7 +249,7 @@ function pot_render_settings_page(): void {
 				pot_checkbox_row( 'promo_enabled', __( 'Promotion strip', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'instant_search', __( 'Instant product search', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'category_navigation', __( 'Shop category navigation', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'checkout_trust', __( 'Checkout clarity and trust panel', 'purple-optimize-toolkit' ), $settings );
+				pot_checkbox_row( 'checkout_trust', __( 'Cart pre-checkout guidance', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'footer_policies', __( 'Footer policy links', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'post_purchase_account', __( 'Post-purchase account invitation', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'wishlist', __( 'Browser wishlist', 'purple-optimize-toolkit' ), $settings );
@@ -325,6 +325,12 @@ function pot_enqueue_assets(): void {
 			'category'          => absint( $category ),
 			'requiredLabel'     => __( 'Required', 'purple-optimize-toolkit' ),
 			'optionalLabel'     => __( 'Optional', 'purple-optimize-toolkit' ),
+			'daysLabel'         => __( 'Days', 'purple-optimize-toolkit' ),
+			'hoursLabel'        => __( 'Hours', 'purple-optimize-toolkit' ),
+			'minutesLabel'      => __( 'Minutes', 'purple-optimize-toolkit' ),
+			'secondsLabel'      => __( 'Seconds', 'purple-optimize-toolkit' ),
+			'cartUrl'           => wc_get_cart_url(),
+			'viewCart'          => __( 'View cart', 'purple-optimize-toolkit' ),
 		)
 	);
 }
@@ -596,7 +602,7 @@ function pot_product_panel( WC_Product $product ): string {
 		<p class="pot-stock"><span aria-hidden="true">●</span> <?php echo esc_html( sprintf( _n( 'Only %d item left in stock', 'Only %d items left in stock', $stock, 'purple-optimize-toolkit' ), $stock ) ); ?></p>
 		<?php endif; ?>
 		<?php if ( $sale_end && $sale_end->getTimestamp() > time() ) : ?>
-		<p class="pot-countdown" data-end="<?php echo esc_attr( gmdate( 'c', $sale_end->getTimestamp() ) ); ?>"><span><?php esc_html_e( 'Scheduled offer ends in', 'purple-optimize-toolkit' ); ?></span> <strong data-countdown></strong></p>
+		<p class="pot-countdown" data-end="<?php echo esc_attr( gmdate( 'c', $sale_end->getTimestamp() ) ); ?>"><span><?php esc_html_e( 'Scheduled offer ends in', 'purple-optimize-toolkit' ); ?></span> <strong data-countdown role="timer"></strong></p>
 		<?php endif; ?>
 		<?php if ( ! empty( $settings['wishlist'] ) ) : ?>
 		<button class="pot-wishlist-button" type="button" data-product="<?php echo esc_attr( (string) $product->get_id() ); ?>" data-title="<?php echo esc_attr( $product->get_name() ); ?>" data-url="<?php echo esc_url( $product->get_permalink() ); ?>" data-image="<?php echo esc_url( wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ) ); ?>" data-price="<?php echo esc_attr( wp_strip_all_tags( $product->get_price_html() ) ); ?>" aria-pressed="false">♡ <span><?php esc_html_e( 'Save to wishlist', 'purple-optimize-toolkit' ); ?></span></button>
@@ -1060,7 +1066,7 @@ function pot_render_inline_offer(): void {
 			<span><?php echo esc_html( 'downsell' === $step ? __( 'One last option', 'purple-optimize-toolkit' ) : __( 'Optional checkout offer', 'purple-optimize-toolkit' ) ); ?></span>
 			<h3 id="pot-inline-offer-title"><?php echo esc_html( $product->get_name() ); ?></h3>
 			<p><?php echo wp_kses_post( wc_price( (float) $product->get_price() * ( 1 - ( $discount / 100 ) ) ) ); ?> <del><?php echo wp_kses_post( wc_price( (float) $product->get_price() ) ); ?></del> · <?php echo esc_html( sprintf( __( '%d%% off', 'purple-optimize-toolkit' ), $discount ) ); ?></p>
-			<?php if ( $expiry ) : ?><p class="pot-offer-timer" data-offer-expiry="<?php echo esc_attr( (string) ( $expiry * 1000 ) ); ?>"><span><?php esc_html_e( 'Offer ends in', 'purple-optimize-toolkit' ); ?></span> <strong data-offer-countdown></strong></p><?php endif; ?>
+			<?php if ( $expiry ) : ?><p class="pot-offer-timer" data-offer-expiry="<?php echo esc_attr( (string) ( $expiry * 1000 ) ); ?>"><span><?php esc_html_e( 'Offer ends in', 'purple-optimize-toolkit' ); ?></span> <strong data-offer-countdown role="timer"></strong></p><?php endif; ?>
 			<form class="pot-offer-actions" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="pot_inline_offer_decision">
 				<input type="hidden" name="pot_offer_step" value="<?php echo esc_attr( $step ); ?>">
@@ -1236,18 +1242,18 @@ function pot_policy_links(): array {
 }
 
 /**
- * Render checkout guidance using factual site configuration.
+ * Render pre-checkout guidance on the cart using factual site configuration.
  */
 function pot_checkout_trust_panel(): void {
 	$settings = pot_settings();
-	if ( empty( $settings['checkout_trust'] ) || ! is_checkout() || is_wc_endpoint_url( 'order-received' ) ) {
+	if ( empty( $settings['checkout_trust'] ) || ! is_cart() ) {
 		return;
 	}
 	$links = pot_policy_links();
 	?>
-	<aside class="pot-checkout-trust" aria-label="<?php esc_attr_e( 'Checkout information', 'purple-optimize-toolkit' ); ?>">
-		<strong><?php esc_html_e( 'Contact → Delivery → Payment', 'purple-optimize-toolkit' ); ?></strong>
-		<span><?php echo is_ssl() ? esc_html__( 'This checkout uses an encrypted connection.', 'purple-optimize-toolkit' ) : esc_html__( 'Payment options and the final total are shown before you place the order.', 'purple-optimize-toolkit' ); ?></span>
+	<aside class="pot-checkout-trust" aria-label="<?php esc_attr_e( 'Before checkout', 'purple-optimize-toolkit' ); ?>">
+		<strong><?php esc_html_e( 'Ready for checkout?', 'purple-optimize-toolkit' ); ?></strong>
+		<span><?php esc_html_e( 'Review delivery and store policies now. Shipping, payment options, and the final total are confirmed at checkout.', 'purple-optimize-toolkit' ); ?></span>
 		<?php foreach ( $links as $label => $url ) : ?><a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $label ); ?></a><?php endforeach; ?>
 	</aside>
 	<?php

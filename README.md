@@ -20,7 +20,7 @@ The canonical Purple source used for local development is vendored at
 - Top-level product-category navigation and real policy/footer destinations.
 - Honest percentage sale badges calculated from catalog prices.
 - Low-stock messaging based only on WooCommerce inventory.
-- Sale countdowns shown only when a real scheduled sale end exists.
+- Eye-catching sale countdowns with animated seconds, shown only when a real scheduled sale end exists.
 - Guest wishlist stored in the visitor's browser, with a wishlist shortcode.
 - Free-shipping progress based on the configured threshold and live cart subtotal.
 - Sticky single-product add-to-cart bar.
@@ -36,6 +36,8 @@ The canonical Purple source used for local development is vendored at
   or silently recharges the completed order.
 - Accepted offers are added once, priced securely in the WooCommerce cart, and
   then hidden while the buyer proceeds to the normal checkout.
+- Single-product add-to-cart confirmations reveal one clear View cart action
+  below the existing purchase button.
 - Optional mobile CSS treatment that keeps WooCommerce’s existing cart checkout
   and checkout completion controls fixed in reach without rendering duplicates.
 - Sticky product add-to-cart remains available on larger screens and is hidden

@@ -48,7 +48,7 @@ $is_post_purchase = 'post_purchase' === ( $context['context'] ?? '' );
 				<?php if ( ! empty( $context['expiry'] ) ) : ?>
 				<p class="pot-offer-timer" data-offer-expiry="<?php echo esc_attr( (string) ( (int) $context['expiry'] * 1000 ) ); ?>">
 					<span><?php esc_html_e( 'This offer ends in', 'purple-optimize-toolkit' ); ?></span>
-					<strong data-offer-countdown aria-live="polite"></strong>
+					<strong data-offer-countdown role="timer"></strong>
 				</p>
 				<?php endif; ?>
 				<?php wc_print_notices(); ?>

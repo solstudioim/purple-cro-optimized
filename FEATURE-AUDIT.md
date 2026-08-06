@@ -19,7 +19,7 @@ behavior; it does not claim a guaranteed conversion lift for every audience.
 | Sticky product action | Included on larger screens | Product, image, price, and purchase action; deliberately disabled on mobile. |
 | Native mobile cart and checkout actions | Included, configurable | CSS repositions WooCommerce's existing buttons without rendering duplicates. |
 | Low-stock messaging | Included | Uses managed WooCommerce inventory only. |
-| Sale and offer countdowns | Included | Shown only for configured, time-bound sale or offer data. |
+| Sale and offer countdowns | Included | Animated days, hours, minutes, and seconds are shown only for configured, time-bound sale or offer data. |
 | Free-shipping progress | Included | Uses live cart subtotal and a configured threshold. |
 | Wishlist | Included foundation | Browser-based guest wishlist with a dedicated page. |
 | Upsell and downsell | Included | Manually selected products, separate discounts/timers, and pre-checkout, inline, or post-purchase placement. |
