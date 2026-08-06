@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"border": {
+			"radius": true
+		}
+	},
+	"styles": {
+		"blocks": {
+			"core/button": {
+				"border": {
+					"radius": "6px"
+				},
+				"typography": {
+					"fontWeight": "650"
+				}
+			},
+			"woocommerce/product-button": {
+				"spacing": {
+					"margin": {
+						"top": "var:preset|spacing|20"
+					}
+				}
+			}
+		}
+	}
+}
+

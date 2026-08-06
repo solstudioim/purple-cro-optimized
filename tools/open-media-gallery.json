@@ -1,0 +1,30 @@
+{
+  "POT-001": [
+    { "provider": "openverse", "id": "a4b4a672-e71e-4e9a-ac20-781a67a007a8" },
+    { "provider": "openverse", "id": "c3c9a440-308a-41aa-85de-7f91a356ff12" }
+  ],
+  "POT-002": [
+    { "provider": "openverse", "id": "54c4b05d-133e-437c-a88f-3cd94c72e365" },
+    { "provider": "openverse", "id": "a1d0d0f8-49e4-4664-a372-2b56dccb3a8d" }
+  ],
+  "POT-003": [
+    { "provider": "commons", "id": "File:A girl wearing light gray socks; February 2016 (01).jpg" },
+    { "provider": "commons", "id": "File:A girl wearing light gray socks; February 2016 (02).jpg" }
+  ],
+  "POT-004": [
+    { "provider": "openverse", "id": "8a10ed39-d3bc-4ad3-8df2-178bef0cd214" },
+    { "provider": "commons", "id": "File:Blue Gray knit texture.jpg" }
+  ],
+  "POT-005": [
+    { "provider": "commons", "id": "File:Pink Cable Knit Cardigan with a Bow Print Dress and Glasses (19061325412).jpg" },
+    { "provider": "openverse", "id": "f32bfb86-ed54-4bd6-bf29-be512c7e1fd1" }
+  ],
+  "POT-006": [
+    { "provider": "openverse", "id": "144ec505-4cb5-4dbc-985c-ff169595feb8" },
+    { "provider": "openverse", "id": "2ec6bd8b-26f8-4e6c-abf2-81d54855d516" }
+  ],
+  "POT-VAR-001": [
+    { "provider": "openverse", "id": "9f887bd0-c708-4ad2-9fc4-769d40c22dbc" },
+    { "provider": "openverse", "id": "3b27492d-7cfb-4ba5-bbc5-0f34e77083bb" }
+  ]
+}

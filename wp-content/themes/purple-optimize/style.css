@@ -1,0 +1,85 @@
+/*
+Theme Name: Purple Optimize
+Theme URI: https://github.com/woocommerce/woo-themes
+Author: Local WooCommerce experiment
+Description: A conversion-focused child theme for Woo's Purple block theme.
+Requires at least: 7.0
+Requires PHP: 7.2
+Version: 0.1.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Template: purple
+Text Domain: purple-optimize
+Tags: e-commerce, block-patterns, full-site-editing, style-variations
+*/
+
+:root {
+	--pot-accent: var(--wp--preset--color--theme-2, #1f1637);
+	--pot-surface: var(--wp--preset--color--theme-1, #fff);
+	--pot-border: var(--wp--preset--color--theme-6, #d8d4df);
+	--pot-positive: #137a47;
+	--pot-warning: #9a4d00;
+	--pot-radius: 0.75rem;
+	--pot-shadow: 0 16px 45px rgb(31 22 55 / 14%);
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+}
+
+.wp-block-woocommerce-product-template > li {
+	position: relative;
+	transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.wp-block-woocommerce-product-template > li:hover {
+	transform: translateY(-3px);
+}
+
+.wp-block-woocommerce-product-image,
+.wc-block-product-gallery-large-image__image {
+	overflow: hidden;
+}
+
+.wp-block-woocommerce-product-image img,
+.wc-block-product-gallery-large-image__image img {
+	transition: transform 320ms ease;
+}
+
+.wp-block-woocommerce-product-template > li:hover .wp-block-woocommerce-product-image img {
+	transform: scale(1.025);
+}
+
+.wp-block-woocommerce-product-button .wp-block-button__link,
+.single_add_to_cart_button,
+.wc-block-components-button {
+	min-height: 3rem;
+	font-weight: 650;
+}
+
+.woocommerce-checkout .wp-site-blocks > header,
+.woocommerce-checkout .wp-site-blocks > footer {
+	border-color: var(--pot-border);
+}
+
+.woocommerce-checkout .wc-block-checkout__main {
+	border: 1px solid var(--pot-border);
+	padding: clamp(1rem, 3vw, 2rem);
+}
+
+.woocommerce-checkout .wc-block-checkout__sidebar {
+	position: sticky;
+	top: 1.5rem;
+}
+
+@media (max-width: 781px) {
+	.wp-block-woocommerce-product-template > li:hover {
+		transform: none;
+	}
+
+	.woocommerce-checkout .wc-block-checkout__main {
+		border: 0;
+		padding: 0;
+	}
+}
+

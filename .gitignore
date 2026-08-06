@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+*.log
+*.zip
+.idea/
+.vscode/
+node_modules/
+vendor/
+wp-config.php
+wp-content/uploads/
+wp-content/cache/

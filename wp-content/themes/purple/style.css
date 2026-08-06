@@ -1,0 +1,867 @@
+/*
+Theme Name: Purple
+Theme URI: https://wordpress.com/themes/purple
+Author: Automattic
+Author URI: https://automattic.com/
+Description: Purple is a WooCommerce starter theme made for the Site Editor and modern commerce. Its clean styles and adaptable color system suit any catalog: fashion and clothing, jewelry, beauty, home decor, food and drink, or digital downloads. Commerce-ready templates and curated patterns cover the storefront from product pages and filterable shop views to cart and checkout. Ten color palettes and ten font pairings make it easy to match your brand in a click, and the theme works well with Jetpack blocks, supports RTL languages, and is fully translation-ready. Whether you’re launching your first online store or refreshing an established one, Purple is a versatile foundation for selling with WordPress and WooCommerce.
+Requires at least: 7.0
+Tested up to: 7.0
+Requires PHP: 7.2
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: purple
+Tags: e-commerce, one-column, two-columns, three-columns, four-columns, wide-blocks, block-patterns, block-styles, featured-images, full-site-editing, style-variations, template-editing, rtl-language-support, threaded-comments, translation-ready
+*/
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+/*
+ * Link styles
+ * https://github.com/WordPress/gutenberg/issues/42319
+ */
+a {
+	text-decoration-thickness: max(0.025em, 1px) !important;
+	text-underline-offset: 0.15em;
+}
+
+/* Add a transition state for buttons. */
+.wp-element-button {
+	transition: border, background-color, color, box-shadow, opacity, filter;
+	transition-duration: 0.15s;
+	transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Outline buttons default to the ink color via this custom property
+ * (see the outline variation css in theme.json). Inside section styles
+ * and covers the local text color already accounts for the surface, so
+ * resolve to currentColor there and let the context decide. */
+.is-style-section-1,
+.is-style-section-2,
+.is-style-section-3,
+.wp-block-cover {
+	--wp--custom--outline-button-color: currentColor;
+}
+
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+/* Default border color for text inputs and textareas across all forms. */
+input:where([type="text"], [type="email"], [type="url"], [type="tel"], [type="number"], [type="password"], [type="search"]),
+textarea {
+	border-color: var(--wp--preset--color--theme-6);
+}
+
+/* ==========================================================================
+   Table block
+   ========================================================================== */
+
+.wp-block-table td,
+.wp-block-table th {
+	border-color: var(--wp--preset--color--theme-6);
+}
+
+.wp-block-table th {
+	font-weight: 600;
+}
+
+/* ==========================================================================
+   WooCommerce — Mini cart
+   ========================================================================== */
+
+/* WooCommerce hardcodes a white drawer surface; the drawer text follows the
+ * scheme, so on dark palettes it rendered light-on-white. Paint the surface
+ * with theme-1 (white in light schemes, so no change there). The overlay
+ * ancestor bumps specificity above WooCommerce's own drawer rule. */
+.wc-block-components-drawer__screen-overlay .wc-block-components-drawer,
+.wc-block-components-drawer .wp-block-woocommerce-mini-cart-contents {
+	background-color: var(--wp--preset--color--theme-1);
+}
+
+/* Product name links in the mini cart drawer and the cart block are
+ * WooCommerce components, not blocks, so the chrome opt-outs in theme.json
+ * can't reach them; their context makes them clearly interactive, so skip
+ * the content-link underline here too. */
+a.wc-block-components-product-name {
+	text-decoration: none;
+}
+
+a.wc-block-components-product-name:hover {
+	text-decoration: underline;
+}
+
+/* WooCommerce's outlined component buttons (e.g. the mini cart "View cart")
+ * use currentColor and a hardcoded #1e1e1e hover; align them with the
+ * theme's outline button style. The doubled class outranks WooCommerce's
+ * own rules regardless of stylesheet order. */
+.wc-block-components-button.wc-block-components-button:not(.is-link).outlined,
+.wc-block-components-button.wc-block-components-button:not(.is-link).is-style-outline {
+	color: var(--wp--custom--outline-button-color);
+}
+
+.wc-block-components-button.wc-block-components-button:not(.is-link).outlined:hover,
+.wc-block-components-button.wc-block-components-button:not(.is-link).outlined:focus,
+.wc-block-components-button.wc-block-components-button:not(.is-link).outlined:active,
+.wc-block-components-button.wc-block-components-button:not(.is-link).is-style-outline:hover,
+.wc-block-components-button.wc-block-components-button:not(.is-link).is-style-outline:focus,
+.wc-block-components-button.wc-block-components-button:not(.is-link).is-style-outline:active {
+	background-color: color-mix(in srgb, currentColor 5%, transparent);
+	color: var(--wp--custom--outline-button-color);
+}
+
+/* ==========================================================================
+   WooCommerce — Checkout
+   ========================================================================== */
+
+/* Styles for WooCommerce blocks that can't be styled via the editor yet. */
+/* https://github.com/woocommerce/woocommerce/issues/59322 */
+
+.wc-block-components-checkout-step__heading,
+.wc-block-components-checkout-order-summary__title,
+.wc-block-components-totals-coupon,
+.wc-block-components-totals-item {
+	color: var(--wp--preset--color--theme-2);
+}
+
+.wp-block-woocommerce-checkout .wc-block-components-title {
+	font-size: var(--wp--preset--font-size--large);
+	line-height: 1.18;
+}
+
+.wc-block-components-form .wc-block-components-checkout-step {
+	margin-bottom: var(--wp--preset--spacing--50);
+}
+
+.wc-block-components-checkout-step__heading-container {
+	margin-bottom: var(--wp--preset--spacing--20);
+}
+
+.wp-block-woocommerce-checkout-order-summary-block {
+	border-radius: 0;
+}
+
+.wp-block-woocommerce-checkout .wc-block-components-text-input:not(.has-error) input,
+.wp-block-woocommerce-checkout .wc-block-components-textarea:not(.has-error),
+.wp-block-woocommerce-checkout .wc-blocks-components-select:not(.has-error) .wc-blocks-components-select__select,
+.wp-block-woocommerce-checkout .wc-blocks-components-select:not(.has-error) .wc-blocks-components-select__container,
+.wp-block-woocommerce-checkout .wc-block-components-checkbox__input[type="checkbox"] {
+	border-color: var(--wp--preset--color--theme-6);
+	border-radius: 0;
+}
+
+.wp-block-woocommerce-checkout .wc-block-components-text-input:not(.has-error) input:focus,
+.wp-block-woocommerce-checkout .wc-block-components-textarea:not(.has-error):focus,
+.wp-block-woocommerce-checkout .wc-blocks-components-select:not(.has-error) .wc-blocks-components-select__select:focus {
+	border-color: var(--wp--preset--color--theme-6);
+	box-shadow: 0 0 0 0.5px var(--wp--preset--color--theme-6);
+}
+
+/* Coupon and gift card fields sit in the order summary, where WooCommerce's
+ * component styles tie the generic override above on specificity and load
+ * later, keeping their rounded corners. The doubled component class wins
+ * the tie; the cart block and extension fields that reuse the text-input
+ * component (e.g. Gift Cards) get the same treatment. */
+.wp-block-woocommerce-cart .wc-block-components-text-input.wc-block-components-text-input input,
+.wp-block-woocommerce-checkout .wc-block-components-text-input.wc-block-components-text-input input {
+	border-radius: 0;
+}
+
+/* ==========================================================================
+   WooCommerce — My Account
+   ========================================================================== */
+
+/* My Account — classic shortcode UI; https://github.com/woocommerce/woocommerce/issues/59391 */
+.woocommerce-account {
+	--wc-form-border-color: var(--wp--preset--color--theme-6);
+	--wc-form-border-radius: 0;
+}
+
+.woocommerce-account .entry-content > .woocommerce {
+	padding-top: var(--wp--preset--spacing--70);
+	padding-bottom: var(--wp--preset--spacing--90);
+}
+
+.woocommerce-account form .form-row:not(.woocommerce-invalid) .input-text,
+.woocommerce-account form .form-row:not(.woocommerce-invalid) select,
+.woocommerce-account form .form-row:not(.woocommerce-invalid) textarea,
+.woocommerce-account .woocommerce-Input:not([type="hidden"]),
+.woocommerce-account .select2-container .select2-selection {
+	border-color: var(--wp--preset--color--theme-6);
+	border-radius: 0;
+}
+
+.woocommerce-account form .form-row:not(.woocommerce-invalid) .input-text:focus,
+.woocommerce-account form .form-row:not(.woocommerce-invalid) select:focus,
+.woocommerce-account form .form-row:not(.woocommerce-invalid) textarea:focus,
+.woocommerce-account .woocommerce-Input:not([type="hidden"]):focus,
+.woocommerce-account .select2-container--open .select2-selection,
+.woocommerce-account .select2-container--focus .select2-selection {
+	border-color: var(--wp--preset--color--theme-6);
+}
+
+.woocommerce form.checkout_coupon,
+.woocommerce form.login,
+.woocommerce form.register {
+	border: none;
+	padding: 0;
+}
+
+.woocommerce form .form-row {
+	padding: 0;
+	margin-bottom: var(--wp--preset--spacing--20);
+}
+
+.woocommerce form .form-row label:not(:has(input[type="checkbox"])) {
+	font-size: var(--wp--preset--font-size--medium);
+	line-height: 1.71;
+	margin-bottom: 5px;
+}
+
+.woocommerce form .form-row label:has(input[type="checkbox"]) {
+	align-items: center;
+	display: inline-flex;
+	font-size: var(--wp--preset--font-size--medium);
+	gap: 0.5em;
+	line-height: 1;
+	margin: 0;
+}
+
+.woocommerce-form-login .form-row:has(.woocommerce-form-login__submit) {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+}
+
+.woocommerce-form-login .woocommerce-form-login__rememberme {
+	margin: 0;
+}
+
+.woocommerce-form-login .woocommerce-form-login__submit {
+	float: none;
+	margin: 0;
+	order: -1;
+}
+
+.woocommerce-account h2:has(+ .woocommerce-form-login) {
+	margin-block: var(--wp--preset--spacing--30);
+}
+
+.woocommerce-LostPassword.lost_password {
+	margin-bottom: 0;
+	margin-top: var(--wp--preset--spacing--50);
+}
+
+/* WOOPRD-1561: My Account address styles. */
+.woocommerce-account .addresses .title .edit {
+	float: none;
+}
+
+.woocommerce-account .addresses address {
+	font-style: normal;
+}
+
+/* ==========================================================================
+   WooCommerce — Catalog
+   ========================================================================== */
+
+/* Catalog sort order select — CSS customizable select (base-select).
+ * Continues PR #82 exploration: https://github.com/woocommerce/woo-themes/pull/82
+ * Closed/open styles from Figma Dropdown/Default (1:6531) and Dropdown/Open Links (37:1153).
+ * Strip native chrome with appearance: none first; opt into base-select for the picker. */
+/* The block renders its own "Sort by" label beside the select; as inline
+ * content the label sits on the baseline while the select is middle-aligned,
+ * so their text drifts apart vertically. Center both in a flex row. */
+/* The frontend nests label + select in form.woocommerce-ordering; the
+ * editor preview renders them inside a Disabled wrapper instead
+ * (.components-disabled). Flex every possible parent so the pair centers
+ * and gaps identically in either context. */
+.woocommerce.wc-block-catalog-sorting,
+.woocommerce.wc-block-catalog-sorting .components-disabled,
+.woocommerce.wc-block-catalog-sorting form.woocommerce-ordering {
+	align-items: center;
+	display: flex;
+	gap: 0.3em;
+	margin-bottom: 0;
+}
+
+/* WooCommerce's label rules add bottom and right margins that push the
+ * label off-center and double the gap; the flex gap handles spacing. The
+ * doubled-class selector beats WooCommerce's editor-only
+ * label.orderby-label margin-right rule. */
+.woocommerce.wc-block-catalog-sorting label,
+.woocommerce.wc-block-catalog-sorting.wc-block-catalog-sorting label.orderby-label {
+	margin: 0;
+}
+
+.woocommerce.wc-block-catalog-sorting select.orderby {
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: var(--wp--preset--color--theme-1);
+	background-image: url('data:image/svg+xml;utf8,<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.0041 10.5547L11.9996 16.0134L5.99512 10.5547L7.00413 9.44482L11.9996 13.9862L16.9951 9.44483L18.0041 10.5547Z" fill="%23111111"></path></svg>');
+	background-position: right center;
+	background-repeat: no-repeat;
+	background-size: 1.5em;
+	border: none;
+	border-radius: 0;
+	color: var(--wp--preset--color--theme-2);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: 1.5625;
+	outline: none;
+	padding-block: 0;
+	padding-inline: 0 calc(1.5em + 10px);
+	vertical-align: middle;
+}
+
+/* The custom styling strips the border and browser outline, so keyboard
+ * focus was invisible (WOOTHME-404). revert restores the browser's native
+ * focus ring, matching the rings on unstyled links and buttons; mouse
+ * focus stays clean via outline: none above. */
+.woocommerce.wc-block-catalog-sorting select.orderby:focus-visible {
+	outline: revert;
+	outline-offset: 2px;
+}
+
+@supports (appearance: base-select) {
+	.woocommerce.wc-block-catalog-sorting select.orderby,
+	.woocommerce.wc-block-catalog-sorting select.orderby::picker(select) {
+		appearance: base-select;
+		background-color: var(--wp--preset--color--theme-1);
+		border: none;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby {
+		align-items: center;
+		background-image: none;
+		box-shadow: none;
+		display: inline-flex;
+		flex-direction: row;
+		gap: 10px;
+		outline: none;
+		padding: 0;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby:not(:open) > option {
+		display: none;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby:not(:open)::picker(select) {
+		display: none;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby .orderby-button {
+		appearance: none;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+		color: inherit;
+		cursor: pointer;
+		display: inline;
+		font: inherit;
+		margin: 0;
+		order: 0;
+		outline: 0;
+		padding: 0;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby selectedcontent {
+		display: inline;
+		white-space: nowrap;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby::picker-icon {
+		background-image: url('data:image/svg+xml;utf8,<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.0041 10.5547L11.9996 16.0134L5.99512 10.5547L7.00413 9.44482L11.9996 13.9862L16.9951 9.44483L18.0041 10.5547Z" fill="currentColor"></path></svg>');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: contain;
+		block-size: 1.5em;
+		color: var(--wp--preset--color--theme-2);
+		content: '';
+		flex-shrink: 0;
+		inline-size: 1.5em;
+		order: 1;
+		transition: rotate 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby:open::picker-icon {
+		rotate: 180deg;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby::picker(select) {
+		align-items: stretch;
+		background-color: var(--wp--preset--color--theme-1);
+		border-radius: 0;
+		box-sizing: border-box;
+		color: var(--wp--preset--color--theme-2);
+		display: flex;
+		flex-direction: column;
+		font-size: inherit;
+		gap: 0;
+		line-height: 1.5625;
+		margin-block-start: 12px;
+		min-width: anchor-size(width);
+		padding: 0;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby:open::picker(select) {
+		border: 1px solid var(--wp--preset--color--theme-6);
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby option::checkmark {
+		content: '';
+	}
+
+	/* Open list items — padding per option so hover fills a padded row. */
+	.woocommerce.wc-block-catalog-sorting select.orderby option {
+		background-color: transparent;
+		box-sizing: border-box;
+		color: var(--wp--preset--color--theme-2);
+		font-size: inherit;
+		gap: 0;
+		line-height: 1.5625;
+		min-block-size: auto;
+		padding: 12px 18px;
+		white-space: nowrap;
+		width: 100%;
+	}
+
+	.woocommerce.wc-block-catalog-sorting select.orderby option:enabled:hover,
+	.woocommerce.wc-block-catalog-sorting select.orderby option:focus {
+		background-color: var(--wp--preset--color--theme-5);
+		outline: none;
+	}
+
+	/* Underline the closed label while the menu is open (Dropdown/Click, 1875:53421). */
+	.woocommerce.wc-block-catalog-sorting select.orderby:open selectedcontent {
+		text-decoration: underline;
+	}
+}
+
+/* ==========================================================================
+   WooCommerce — Single product
+   ========================================================================== */
+
+.wp-block-product-specifications-item__value p {
+	margin: 0
+}
+
+/* Checkbox alignment for reviews form */
+.wp-block-woocommerce-product-review-form .comment-form-cookies-consent {
+	align-items: flex-start;
+}
+
+/* Fixed #fff — form control surface; not theme-1 (page background shifts per style variation). */
+.wc-block-components-quantity-selector {
+	background-color: #fff;
+	border-color: var(--wp--preset--color--theme-6);
+	border-radius: 0;
+	min-height: 44px;
+}
+
+/* WooCommerce unsets the stepper width inside add-to-cart-with-options,
+ * so grouped-product steppers are content-sized, and a number input's
+ * intrinsic width varies with its max attribute: rows with and without
+ * managed stock rendered uneven widths (WOOTHME-413). Pin the input to
+ * the same 40px floor the workaround below uses so every stepper sizes
+ * identically, and keep the selector from being squeezed by long titles
+ * in its nowrap row; those wrap inside the label instead. */
+.wp-block-woocommerce-add-to-cart-with-options-grouped-product-item .wc-block-add-to-cart-with-options-grouped-product-item-selector {
+	/* WooCommerce reserves min-width: 6.8em and end-aligns the stepper
+	 * inside it; with the steppers pinned uniform that just indents them
+	 * off the content edge. Let the wrapper hug the stepper instead. */
+	flex-shrink: 0;
+	min-width: 0;
+}
+
+/* The doubled class outranks the width: auto in the stepper workaround
+ * below, which ties this rule's specificity otherwise and loads later. */
+.wp-block-woocommerce-add-to-cart-with-options-grouped-product-item .wc-block-components-quantity-selector input.wc-block-components-quantity-selector__input.wc-block-components-quantity-selector__input {
+	width: 40px;
+}
+
+/* Editor preview uses legacy .qty classes; frontend adds __input. */
+.woocommerce .wc-block-components-quantity-selector input.qty,
+.wc-block-components-quantity-selector input.qty,
+.wc-block-components-quantity-selector input.wc-block-components-quantity-selector__input {
+	-webkit-appearance: textfield;
+	appearance: textfield;
+	background-color: #fff;
+	border: 0;
+	box-shadow: none;
+	color: #111111;
+	flex: 1 1 auto;
+	font-weight: 400;
+	margin: 0;
+	min-width: 40px;
+	order: 2;
+	text-align: center;
+	width: auto;
+}
+
+.wc-block-components-quantity-selector input.qty::-webkit-inner-spin-button,
+.wc-block-components-quantity-selector input.qty::-webkit-outer-spin-button,
+.wc-block-components-quantity-selector input.wc-block-components-quantity-selector__input::-webkit-inner-spin-button,
+.wc-block-components-quantity-selector input.wc-block-components-quantity-selector__input::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.wc-block-components-quantity-selector > .wc-block-components-quantity-selector__button--minus {
+	background-color: #fff;
+	color: #111111;
+	order: 1;
+}
+
+.wc-block-components-quantity-selector > .wc-block-components-quantity-selector__button--plus {
+	background-color: #fff;
+	color: #111111;
+	order: 3;
+}
+
+.woocommerce-page label.wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute-name {
+	margin-bottom: 0;
+}
+
+:where(.wc-block-product-filter-chips__items) {
+	gap: var(--wp--preset--spacing--10);
+}
+
+/* Product filter chips expose no typography UI and WooCommerce hardcodes .8em. */
+.wc-block-product-filter-chips__item {
+	border-radius: 0;
+	color: var(--wp--preset--color--theme-2);
+	font-size: var(--wp--preset--font-size--small);
+	letter-spacing: 0.06em;
+	line-height: 1.28;
+	padding: 0.625rem 1.25rem;
+	text-transform: uppercase;
+}
+
+.wp-block-accordion-heading__toggle:hover .wp-block-accordion-heading__toggle-title {
+	text-decoration: none;
+}
+
+/* Closed accordion panels are server-rendered without [hidden] — the
+ * Interactivity API only applies it after hydration — so they flash open on
+ * load (and would animate shut with the transition below). Collapse them
+ * from first paint via the server-rendered aria-expanded state. Scoped to
+ * scripting: enabled so no-JS visitors keep the all-panels-open fallback. */
+@media (scripting: enabled) {
+	.wp-block-accordion-heading:has([aria-expanded="false"]) + .wp-block-accordion-panel {
+		height: 0;
+		overflow: visible clip;
+	}
+}
+
+/* Animate accordion panels open/closed. Pure CSS: interpolate-size lets
+ * height transition to auto; allow-discrete + @starting-style animate
+ * across the [hidden] display swap. Unsupported browsers snap as before. */
+@media not (prefers-reduced-motion) {
+	@supports (interpolate-size: allow-keywords) {
+		.wp-block-accordion-panel {
+			interpolate-size: allow-keywords;
+			height: auto;
+			overflow: visible clip;
+			transition:
+				height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+				content-visibility 0.25s allow-discrete,
+				display 0.25s allow-discrete;
+
+			@starting-style {
+				height: 0;
+			}
+		}
+
+		.wp-block-accordion-panel[hidden] {
+			height: 0;
+		}
+	}
+}
+
+.wp-block-woocommerce-product-review-content p {
+	margin-top: var(--wp--preset--spacing--20);
+	margin-bottom: 0;
+}
+
+.wp-block-woocommerce-product-gallery-large-image-next-previous-is-layout-flex {
+	gap: 0;
+}
+
+/* ==========================================================================
+   WooCommerce — Cart
+   ========================================================================== */
+
+.wp-block-woocommerce-cart-order-summary-heading-block textarea {
+	padding-left: 0;
+}
+
+.wc-block-cart-item__quantity {
+	margin-top: var(--wp--preset--spacing--20);
+}
+
+/* ==========================================================================
+   WooCommerce — Mini cart
+   ========================================================================== */
+
+/* Equal-width half-and-half footer buttons. WooCommerce flex-grow targets direct
+ * children of footer-actions; experimental iAPI nests them inside the footer block. */
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions .wp-block-woocommerce-mini-cart-footer-block,
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions > .block-editor-inner-blocks > .block-editor-block-list__layout {
+	display: flex;
+	gap: 16px;
+	width: 100%;
+}
+
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions .wc-block-mini-cart__footer-cart,
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions .wc-block-mini-cart__footer-checkout,
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions .wp-block-woocommerce-mini-cart-cart-button-block,
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions .wp-block-woocommerce-mini-cart-checkout-button-block,
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block-woocommerce-mini-cart-cart-button-block,
+.wc-block-mini-cart__footer .wc-block-mini-cart__footer-actions > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block-woocommerce-mini-cart-checkout-button-block {
+	flex: 1 1 0;
+	min-width: 0;
+	justify-content: center;
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+
+/* Submenu text colour — beats core's default black on :not(.has-text-color). */
+:root .wp-block-navigation .wp-block-navigation__submenu-container,
+:root .wp-block-navigation .wp-block-navigation__submenu-container :where(a, button).wp-block-navigation-item__content {
+	color: var(--wp--preset--color--theme-2);
+}
+
+/* Navigation: desktop flyout panels and small-screen overlay accordion.
+ * In style.css (not theme.json) because theme.json strips @media queries.
+ * :root / :not(.has-background) prefixes beat core without !important. */
+@media (min-width: 600px) {
+	/* Keep dropdown hit targets above page content. */
+	.wp-site-blocks > .wp-block-template-part:has(.wp-block-navigation),
+	.wp-site-blocks > header.wp-block-template-part:has(.wp-block-navigation) {
+		position: relative;
+		z-index: 10;
+	}
+
+	:root .wp-block-navigation:not(.has-background) {
+		/* Panel surface: page background, theme-6 outline, min 250px. */
+		& .wp-block-navigation__submenu-container,
+		& .has-child:not(.open-on-click):hover > .wp-block-navigation__submenu-container,
+		& .has-child .wp-block-navigation-submenu__toggle[aria-expanded="true"] ~ .wp-block-navigation__submenu-container {
+			background-color: var(--wp--preset--color--theme-1);
+			box-shadow: none;
+			border: 1px solid var(--wp--preset--color--theme-6);
+			padding-block: 0;
+			min-width: 250px;
+		}
+
+		/* Top-level panel: drop to header bottom (--purple-nav-dropdown-offset from JS). */
+		& > .wp-block-navigation__container > .wp-block-navigation-item.has-child,
+		&.wp-block-navigation__container > .wp-block-navigation-item.has-child {
+			&:hover,
+			&:focus-within {
+				z-index: 5;
+			}
+
+			/* Pointer bridge across the gap down to the panel. */
+			&::after {
+				content: "";
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 100%;
+				height: var(--purple-nav-dropdown-offset, 31.5px);
+				background: transparent;
+				pointer-events: auto;
+				z-index: 2;
+			}
+
+			& > .wp-block-navigation__submenu-container {
+				top: calc(100% + var(--purple-nav-dropdown-offset, 31.5px));
+				left: -1.25rem;
+				z-index: 3;
+
+				&::after {
+					content: "";
+					position: absolute;
+					left: 0;
+					right: 0;
+					bottom: 100%;
+					height: var(--purple-nav-dropdown-offset, 31.5px);
+					background: transparent;
+					pointer-events: auto;
+				}
+			}
+		}
+
+		/* Dropdown rows: padding, chevron inset, hover highlight. */
+		& .wp-block-navigation__submenu-container {
+			& .wp-block-navigation-item__content {
+				padding: 1.25rem;
+			}
+
+			& .wp-block-navigation__submenu-icon {
+				margin-right: 1.25rem;
+			}
+
+			& .wp-block-navigation-item:hover,
+			& .wp-block-navigation-item:focus-within {
+				background-color: var(--wp--preset--color--theme-5);
+
+				& > .wp-block-navigation-item__content {
+					text-decoration: underline;
+				}
+			}
+		}
+	}
+}
+
+/* Fixed rem spacing — fluid presets clamp to a 20px floor on narrow viewports. */
+@media (max-width: 599px) {
+	:root .wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open:not(.disable-default-overlay) {
+		/* Full-bleed overlay; horizontal indent lives on the links. */
+		padding-left: 0;
+		padding-right: 0;
+
+		/* Close button only — not the menu rows. */
+		& .wp-block-navigation__responsive-container-close {
+			top: 1.25rem;
+			right: 1.25rem;
+		}
+
+		& .wp-block-navigation__responsive-container-content {
+			padding-left: 0;
+			padding-right: 0;
+			align-items: stretch;
+
+			& .wp-block-navigation__container,
+			& .wp-block-navigation__submenu-container {
+				gap: 0;
+			}
+
+			& .wp-block-navigation__container {
+				align-items: stretch;
+			}
+
+			/* Submenu panels: full width, no core 2rem inset. */
+			& .has-child .wp-block-navigation__submenu-container,
+			& .wp-block-navigation__submenu-container {
+				width: 100%;
+				max-width: none;
+				min-width: 0;
+				padding-block: 0.625rem;
+				padding-inline: 0;
+			}
+
+			& .wp-block-navigation__submenu-container .wp-block-navigation-item {
+				padding: 0;
+				margin: 0;
+			}
+
+			/* Top-level row height. */
+			& .wp-block-navigation-item__content {
+				padding-top: 1.125rem;
+				padding-bottom: 1.125rem;
+			}
+
+			/* Top-level horizontal inset. */
+			& > .wp-block-navigation__container > .wp-block-navigation-item > .wp-block-navigation-item__content {
+				padding-left: 1.25rem;
+				padding-right: 1.25rem;
+			}
+
+			/* Submenu link indent by nesting depth (30px / 60px / 80px). */
+			& .has-child .wp-block-navigation__submenu-container > .wp-block-navigation-item > .wp-block-navigation-item__content {
+				padding: 0.625rem 1.25rem 0.625rem 1.875rem;
+			}
+
+			& .wp-block-navigation__submenu-container .wp-block-navigation__submenu-container > .wp-block-navigation-item > .wp-block-navigation-item__content {
+				padding: 0.625rem 1.25rem 0.625rem 3.75rem;
+			}
+
+			& .wp-block-navigation__submenu-container .wp-block-navigation__submenu-container .wp-block-navigation__submenu-container > .wp-block-navigation-item > .wp-block-navigation-item__content {
+				padding: 0.625rem 1.25rem 0.625rem 5rem;
+			}
+
+			/* Parent rows: label + chevron grid; submenu collapses below. */
+			& .wp-block-navigation-item.has-child {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto;
+				align-items: center;
+				width: 100%;
+
+				& > .wp-block-navigation-item__content {
+					grid-column: 1;
+					grid-row: 1;
+					width: auto;
+					min-width: 0;
+				}
+
+				& > .wp-block-navigation__submenu-container {
+					grid-column: 1 / -1;
+					grid-row: 2;
+					display: none;
+				}
+
+				/* Core hides overlay chevrons — restore the toggle. */
+				& > .wp-block-navigation__submenu-icon,
+				& > .wp-block-navigation-submenu__toggle {
+					grid-column: 2;
+					grid-row: 1;
+					display: flex;
+					visibility: visible;
+					align-items: center;
+					justify-content: center;
+					flex-shrink: 0;
+					width: 24px;
+					height: 24px;
+					margin: 0;
+					padding-right: 1.25rem;
+					box-sizing: content-box;
+
+					& svg {
+						display: block;
+						width: 12px;
+						height: 12px;
+						stroke: currentColor;
+						transform: rotate(-90deg);
+						transition: transform 0.1s ease;
+					}
+				}
+
+				/* Open accordion section (.is-submenu-open toggled in JS). */
+				&.is-submenu-open {
+					& > .wp-block-navigation-item__content {
+						text-decoration: underline;
+					}
+
+					& > .wp-block-navigation__submenu-container {
+						display: block;
+						background-color: var(--wp--preset--color--theme-5) !important;
+					}
+
+					& > .wp-block-navigation__submenu-icon svg,
+					& > .wp-block-navigation-submenu__toggle svg {
+						transform: rotate(0deg);
+					}
+				}
+			}
+
+			/* Leaf links span the full row width. */
+			& .wp-block-navigation-item:not(.has-child) > .wp-block-navigation-item__content,
+			& .wp-block-navigation__submenu-container .wp-block-navigation-item:not(.has-child) > .wp-block-navigation-item__content {
+				display: block;
+				width: 100%;
+				box-sizing: border-box;
+			}
+		}
+	}
+}

@@ -1,0 +1,78 @@
+# Purple CRO Optimized
+
+Purple CRO Optimized is a conversion-focused WooCommerce implementation built
+on Woo's Purple block theme. It applies common ecommerce CRO patterns and
+implements the 16 recommendations in Baymard's ecommerce CRO framework.
+
+The project is deliberately split into two packages:
+
+- `wp-content/themes/purple-optimize`: a child theme for presentation and layout.
+- `wp-content/plugins/purple-optimize-toolkit`: optional store functionality.
+
+The canonical Purple source used for local development is vendored at
+`wp-content/themes/purple` from `woocommerce/woo-themes` (`trunk/purple`).
+
+## Included conversion features
+
+- Configurable promotion strip and coupon copy button.
+- Category-scoped instant product search with SKU lookup, bounded typo tolerance,
+  keyboard navigation, and a nonce-protected WooCommerce endpoint.
+- Top-level product-category navigation and real policy/footer destinations.
+- Honest percentage sale badges calculated from catalog prices.
+- Low-stock messaging based only on WooCommerce inventory.
+- Sale countdowns shown only when a real scheduled sale end exists.
+- Guest wishlist stored in the visitor's browser, with a wishlist shortcode.
+- Free-shipping progress based on the configured threshold and live cart subtotal.
+- Sticky single-product add-to-cart bar.
+- Prominent real review summaries and an approved featured review near the buy box.
+- Product reassurance plus checkout progress, trust/policy guidance, and visible
+  Required/Optional field labels.
+- Privacy-controlled recent-purchase proof backed only by processing/completed
+  WooCommerce orders; anonymous and disabled by default.
+- A manually configured upsell and optional downsell with three placements:
+  full-page before checkout, passive inline before Place Order, or after purchase.
+  Each offer has its own real discount and countdown duration.
+- Post-purchase acceptance starts a separate checkout and order; it never mutates
+  or silently recharges the completed order.
+- Accepted offers are added once, priced securely in the WooCommerce cart, and
+  then hidden while the buyer proceeds to the normal checkout.
+- Optional mobile CSS treatment that keeps WooCommerce’s existing cart checkout
+  and checkout completion controls fixed in reach without rendering duplicates.
+- Sticky product add-to-cart remains available on larger screens and is hidden
+  on mobile; offer-page Yes/No decisions remain sticky within the offer page.
+- Purple's existing mini-cart, quantity steppers, variation chips, product gallery,
+  product filters, ratings, size-chart pattern, related products, and checkout.
+- A post-purchase account invitation, seeded local policy pages and an editor-side
+  checklist for product photography and description readiness.
+- A separate, repeatable `tools/import-open-media-gallery.php` importer adds two
+  curated Openverse/Wikimedia Commons images per demo product. It validates
+  license, MIME type, dimensions, and file size; stores source metadata; and
+  renders visible gallery photo credits on product pages.
+
+The toolkit intentionally does not manufacture purchases, names, viewer counts,
+or arbitrary scarcity. Showing real customer first names is an explicit setting
+that should only be used with an appropriate privacy basis.
+
+See [`FEATURE-AUDIT.md`](FEATURE-AUDIT.md) for the Baymard 16-item implementation
+matrix and the remaining merchant-content or gateway dependencies.
+
+## Installation
+
+Install the parent theme, child theme, and plugin in that order. Activate
+`Purple Optimize`, then activate `Purple Optimize Toolkit`.
+
+Requirements: WordPress 6.7 or newer, PHP 7.4 or newer, and WooCommerce.
+
+Use `[purple_optimize_wishlist]` on a page to render the browser wishlist.
+
+For a populated development store, run:
+
+`wp eval-file tools/seed-demo.php`
+
+Run the open-media importer only after the demo products exist:
+
+`wp eval-file tools/import-open-media-gallery.php`
+
+The deterministic seeder does not call external APIs automatically. The curated
+manifest is stored in `tools/open-media-gallery.json`, so API search ordering
+cannot silently change the catalog.
