@@ -1,0 +1,93 @@
+{
+  "measurement": {
+    "state": "before",
+    "date": "2026-08-09",
+    "runtime_commit": "af49ce3",
+    "environment": "Local Laravel Valet at http://purple-optimize.test",
+    "http_method": "Five sequential curl --compressed requests per route; checkout used a temporary cookie jar containing product 19",
+    "browser_method": "Fresh in-app browser navigation followed by page asset inventory",
+    "units": {
+      "time_starttransfer": "seconds",
+      "compressed_html": "bytes",
+      "asset_size": "bytes"
+    }
+  },
+  "http": {
+    "home": {
+      "route": "/",
+      "status": 200,
+      "time_starttransfer_samples": [0.493162, 0.174484, 0.173651, 0.170201, 0.167720],
+      "median_time_starttransfer": 0.173651,
+      "compressed_html_samples": [35014, 35014, 35014, 35014, 35014],
+      "median_compressed_html": 35014
+    },
+    "shop": {
+      "route": "/shop/",
+      "status": 200,
+      "time_starttransfer_samples": [0.182009, 0.179391, 0.179662, 0.178995, 0.179847],
+      "median_time_starttransfer": 0.179662,
+      "compressed_html_samples": [42023, 42023, 42023, 42023, 42023],
+      "median_compressed_html": 42023
+    },
+    "product": {
+      "route": "/product/coastal-blue-sweater/",
+      "status": 200,
+      "time_starttransfer_samples": [0.190843, 0.186627, 0.186758, 0.182703, 0.179727],
+      "median_time_starttransfer": 0.186627,
+      "compressed_html_samples": [39463, 39463, 39463, 39463, 39463],
+      "median_compressed_html": 39463
+    },
+    "cart": {
+      "route": "/cart/",
+      "status": 200,
+      "time_starttransfer_samples": [0.140255, 0.138658, 0.136974, 0.139306, 0.138508],
+      "median_time_starttransfer": 0.138658,
+      "compressed_html_samples": [46744, 46748, 46748, 46747, 46749],
+      "median_compressed_html": 46748
+    },
+    "checkout": {
+      "route": "/checkout/",
+      "status": 200,
+      "cart_product_id": 19,
+      "time_starttransfer_samples": [0.129460, 0.131713, 0.133649, 0.130299, 0.128664],
+      "median_time_starttransfer": 0.130299,
+      "compressed_html_samples": [42496, 42250, 42250, 42250, 42250],
+      "median_compressed_html": 42250
+    }
+  },
+  "browser_assets": {
+    "home": { "total": 54, "font": 1, "image": 16, "other": 1, "script": 20, "stylesheet": 16, "inline_svg": 7 },
+    "shop": { "total": 64, "font": 1, "image": 7, "other": 1, "script": 34, "stylesheet": 21, "inline_svg": 11 },
+    "product": { "total": 76, "font": 2, "image": 17, "other": 1, "script": 27, "stylesheet": 29, "inline_svg": 17 }
+  },
+  "idle_runtime": {
+    "empty_page_intervals": 1,
+    "empty_page_mutation_observers": 1,
+    "source": "tests/performance-contracts.test.mjs pre-change red-state output"
+  },
+  "toolkit_assets": {
+    "child_theme_css": { "raw": 3507, "gzip": 1285 },
+    "toolkit_css": { "raw": 18987, "gzip": 4428 },
+    "toolkit_js": { "raw": 16845, "gzip": 4723 },
+    "total_raw": 39339,
+    "total_gzip": 10436
+  },
+  "observed_product_sources": {
+    "blue_sweater_man_1024_webp": 29394,
+    "blue_sweater_man_1536_webp": 67204,
+    "blue_sweater_man_original_webp": 106114,
+    "openverse_original_jpeg": 209584,
+    "wikimedia_original_jpeg": 605228,
+    "purple_blue_sweater_cut_webp": 187546,
+    "purple_sweaters_webp": 280776,
+    "pink_sweater_woman_webp": 80140,
+    "orange_sweater_woman_webp": 47798
+  },
+  "limitations": [
+    "Local Valet timing is directional and is not production field Core Web Vitals evidence.",
+    "WP-CLI could not connect to the Valet database, so backend profile and doctor data were unavailable.",
+    "The in-app browser did not expose Navigation Timing or Resource Timing entries; asset counts were used instead.",
+    "The checkout benchmark uses an anonymous temporary session with one simple product and no completed order.",
+    "The first home request was a cold outlier; the median is reported and all raw samples are retained."
+  ]
+}
