@@ -114,17 +114,19 @@ Existing media is not destructively rewritten by this change.
 
 Run the same checks before and after implementation:
 
-1. Five HTTP samples for home, shop, product, cart, and checkout routes.
-2. Browser asset inventory and product gallery request behavior.
-3. JavaScript syntax check, PHP lint, JSON validation, and `git diff --check`.
-4. Browser console error check.
-5. Product timer and expiry behavior.
-6. Product add-to-cart and single View cart confirmation.
-7. Cart guidance and sticky native checkout action.
-8. Checkout field labels, completion action, and optional inline offer.
-9. Pre-checkout and post-purchase offer routes.
-10. Wishlist, instant search, social proof, and empty-cart behavior.
-11. Workspace-to-Valet file comparison after installation.
+1. Persist raw before and after measurements under `docs/performance/`, using
+   the same routes, sample count, browser state, and commands.
+2. Five HTTP samples for home, shop, product, cart, and checkout routes.
+3. Browser asset inventory and product gallery request behavior.
+4. JavaScript syntax check, PHP lint, JSON validation, and `git diff --check`.
+5. Browser console error check.
+6. Product timer and expiry behavior.
+7. Product add-to-cart and single View cart confirmation.
+8. Cart guidance and sticky native checkout action.
+9. Checkout field labels, completion action, and optional inline offer.
+10. Pre-checkout and post-purchase offer routes.
+11. Wishlist, instant search, social proof, and empty-cart behavior.
+12. Workspace-to-Valet file comparison after installation.
 
 ## Acceptance Criteria
 
@@ -135,5 +137,8 @@ Run the same checks before and after implementation:
   attributes while the primary image remains eager and high priority.
 - No approved conversion feature is removed or behaviorally regressed.
 - No new PHP, JavaScript, browser-console, or markup-processing errors appear.
+- A committed comparison report states which measured values improved, stayed
+  neutral, or regressed and does not label the work successful when an
+  acceptance criterion failed.
 - Documentation describes the optimization honestly without guaranteeing a
   universal conversion or performance score.
