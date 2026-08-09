@@ -17,6 +17,9 @@ require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/image.php';
 require_once ABSPATH . 'wp-admin/includes/media.php';
 
+const POT_OPEN_MEDIA_MAX_DIMENSION = 1600;
+const POT_OPEN_MEDIA_QUALITY       = 82;
+
 $manifest_file = __DIR__ . '/open-media-gallery.json';
 $manifest      = json_decode( (string) file_get_contents( $manifest_file ), true );
 if ( ! is_array( $manifest ) ) {
@@ -98,6 +101,47 @@ function pot_open_media_from_commons( string $title ) {
 }
 
 /**
+ * Resize and compress a validated temporary image when the editor supports it.
+ *
+ * @param string $tmp  Temporary image path.
+ * @param string $mime Validated image MIME type.
+ * @return array{path:string,mime:string,extension:string}
+ */
+function pot_prepare_open_media_image( string $tmp, string $mime ): array {
+	$extensions = array( 'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp' );
+	$fallback   = array( 'path' => $tmp, 'mime' => $mime, 'extension' => $extensions[ $mime ] );
+	$editor     = wp_get_image_editor( $tmp );
+	if ( is_wp_error( $editor ) ) {
+		return $fallback;
+	}
+
+	$size = $editor->get_size();
+	if ( ! is_array( $size ) || empty( $size['width'] ) || empty( $size['height'] ) ) {
+		return $fallback;
+	}
+	if ( max( (int) $size['width'], (int) $size['height'] ) > POT_OPEN_MEDIA_MAX_DIMENSION ) {
+		$resized = $editor->resize( POT_OPEN_MEDIA_MAX_DIMENSION, POT_OPEN_MEDIA_MAX_DIMENSION, false );
+		if ( is_wp_error( $resized ) ) {
+			return $fallback;
+		}
+	}
+
+	$editor->set_quality( POT_OPEN_MEDIA_QUALITY );
+	$target_mime = wp_image_editor_supports( array( 'mime_type' => 'image/webp' ) ) ? 'image/webp' : $mime;
+	$target_ext  = $extensions[ $target_mime ];
+	$target_name = wp_unique_filename( dirname( $tmp ), basename( $tmp ) . '-pot-optimized.' . $target_ext );
+	$saved       = $editor->save( dirname( $tmp ) . '/' . $target_name, $target_mime );
+	if ( is_wp_error( $saved ) || empty( $saved['path'] ) ) {
+		return $fallback;
+	}
+	if ( $saved['path'] !== $tmp && file_exists( $tmp ) ) {
+		unlink( $tmp );
+	}
+
+	return array( 'path' => $saved['path'], 'mime' => $target_mime, 'extension' => $target_ext );
+}
+
+/**
  * Download and import one validated image record.
  *
  * @param array<string, string> $record Normalized media data.
@@ -133,7 +177,13 @@ function pot_import_open_media_attachment( array $record, WC_Product $product, s
 		return new WP_Error( 'media_mime', 'The downloaded file is not a supported raster image.' );
 	}
 
-	$filename      = sanitize_file_name( strtolower( $sku . '-' . $record['provider'] . '-' . substr( md5( $record['source_id'] ), 0, 10 ) . '.' . $extensions[ $mime ] ) );
+	$prepared = pot_prepare_open_media_image( $tmp, $mime );
+	$tmp      = $prepared['path'];
+	$mime     = $prepared['mime'];
+	$filename = sanitize_file_name(
+		strtolower( $sku . '-' . $record['provider'] . '-' . substr( md5( $record['source_id'] ), 0, 10 ) . '.' . $prepared['extension'] )
+	);
+
 	$attachment_id = media_handle_sideload( array( 'name' => $filename, 'tmp_name' => $tmp ), $product->get_id(), $record['title'] );
 	if ( is_wp_error( $attachment_id ) ) {
 		@unlink( $tmp );
