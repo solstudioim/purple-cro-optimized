@@ -133,6 +133,9 @@
 	}
 
 	function setupCountdowns() {
+		const countdowns = [...document.querySelectorAll('.pot-countdown')];
+		if (!countdowns.length) return;
+
 		const renderTimer = (output, remaining) => {
 			const parts = [
 				{ label: config.daysLabel || 'Days', value: Math.floor(remaining / 86400000) },
@@ -152,14 +155,22 @@
 			output.setAttribute('aria-label', parts.map((part) => `${part.value} ${part.label.toLowerCase()}`).join(', '));
 		};
 
-		const update = () => document.querySelectorAll('.pot-countdown').forEach((node) => {
-			const remaining = Math.max(0, new Date(node.dataset.end).getTime() - Date.now());
-			const output = node.querySelector('[data-countdown]');
-			if (!remaining) { node.remove(); return; }
-			renderTimer(output, remaining);
-		});
-		update();
-		window.setInterval(update, 1000);
+		const update = () => {
+			let active = 0;
+			countdowns.forEach((node) => {
+				if (!node.isConnected) return;
+				const remaining = Math.max(0, new Date(node.dataset.end).getTime() - Date.now());
+				const output = node.querySelector('[data-countdown]');
+				if (!remaining) { node.remove(); return; }
+				active += 1;
+				renderTimer(output, remaining);
+			});
+			return active > 0;
+		};
+		if (!update()) return;
+		const interval = window.setInterval(() => {
+			if (!update()) window.clearInterval(interval);
+		}, 1000);
 	}
 
 	function setupStickyCart() {
@@ -205,22 +216,36 @@
 	}
 
 	function moveCheckoutEnhancements() {
+		const inlineOffer = document.querySelector('.pot-inline-offer');
+		const trust = document.querySelector('.pot-checkout-trust');
+		const accountInvitation = document.querySelector('.pot-account-invitation');
+		if (!inlineOffer && !trust && !accountInvitation) return;
+
+		let observer;
 		const place = () => {
-			const checkout = document.querySelector('.wp-block-woocommerce-checkout, .wc-block-checkout');
+			let pending = false;
 			const cart = document.querySelector('.wp-block-woocommerce-cart, .wc-block-cart');
 			const actions = document.querySelector('.wc-block-checkout__actions_row');
-			const inlineOffer = document.querySelector('.pot-inline-offer');
-			const trust = document.querySelector('.pot-checkout-trust');
-			const accountInvitation = document.querySelector('.pot-account-invitation');
-			if (inlineOffer && actions && inlineOffer.nextElementSibling !== actions) actions.parentNode.insertBefore(inlineOffer, actions);
-			if (trust && cart && trust.nextElementSibling !== cart) cart.parentNode.insertBefore(trust, cart);
+			if (inlineOffer) {
+				if (actions && inlineOffer.nextElementSibling !== actions) actions.parentNode.insertBefore(inlineOffer, actions);
+				else if (!actions) pending = true;
+			}
+			if (trust) {
+				if (cart && trust.nextElementSibling !== cart) cart.parentNode.insertBefore(trust, cart);
+				else if (!cart) pending = true;
+			}
 			if (accountInvitation) {
 				const receipt = document.querySelector('main .woocommerce-order, main .wp-block-woocommerce-order-confirmation-status, main');
 				if (receipt && accountInvitation.parentNode !== receipt) receipt.append(accountInvitation);
+				else if (!receipt) pending = true;
 			}
+			if (!pending) observer?.disconnect();
+			return pending;
 		};
-		place();
-		new MutationObserver(place).observe(document.body, { childList: true, subtree: true });
+		if (place()) {
+			observer = new MutationObserver(place);
+			observer.observe(document.body, { childList: true, subtree: true });
+		}
 	}
 
 	function labelCheckoutFields() {
