@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.6.0
+ * Version: 0.7.0
  * Requires at least: 6.7
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -15,10 +15,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.6.0' );
+define( 'POT_VERSION', '0.7.0' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
+
+require_once POT_PATH . 'includes/storefront-presentation.php';
 
 /**
  * Default plugin settings.
@@ -337,6 +339,18 @@ function pot_enqueue_assets(): void {
 add_action( 'wp_enqueue_scripts', 'pot_enqueue_assets', 40 );
 
 /**
+ * Identify the normal checkout form without receipt, payment, or offer routes.
+ *
+ * @return bool
+ */
+function pot_is_active_checkout(): bool {
+	return is_checkout()
+		&& ! is_wc_endpoint_url( 'order-received' )
+		&& ! is_wc_endpoint_url( 'order-pay' )
+		&& ! pot_is_offer_page();
+}
+
+/**
  * Add the opt-in CSS scope for native mobile cart and checkout actions.
  *
  * @param string[] $classes Body classes.
@@ -347,7 +361,13 @@ function pot_body_classes( array $classes ): array {
 	if ( ! empty( $settings['mobile_sticky_checkout'] ) && ( is_cart() || is_checkout() ) ) {
 		$classes[] = 'pot-mobile-sticky-checkout-enabled';
 	}
-	return $classes;
+	return pot_presentation_checkout_classes(
+		$classes,
+		is_checkout(),
+		is_wc_endpoint_url( 'order-received' ),
+		is_wc_endpoint_url( 'order-pay' ),
+		pot_is_offer_page()
+	);
 }
 add_filter( 'body_class', 'pot_body_classes' );
 
@@ -356,7 +376,7 @@ add_filter( 'body_class', 'pot_body_classes' );
  */
 function pot_promotion_strip(): void {
 	$settings = pot_settings();
-	if ( pot_is_offer_page() || empty( $settings['promo_enabled'] ) || '' === trim( (string) $settings['promo_text'] ) ) {
+	if ( pot_is_offer_page() || pot_is_active_checkout() || empty( $settings['promo_enabled'] ) || '' === trim( (string) $settings['promo_text'] ) ) {
 		return;
 	}
 	?>
@@ -375,10 +395,10 @@ add_action( 'wp_body_open', 'pot_promotion_strip', 5 );
  */
 function pot_category_navigation(): void {
 	$settings = pot_settings();
-	if ( pot_is_offer_page() || empty( $settings['category_navigation'] ) ) {
+	if ( pot_is_offer_page() || pot_is_active_checkout() || empty( $settings['category_navigation'] ) ) {
 		return;
 	}
-	$categories = get_terms( array( 'taxonomy' => 'product_cat', 'parent' => 0, 'hide_empty' => true, 'number' => 8 ) );
+	$categories = get_terms( pot_presentation_category_query_args( absint( get_option( 'default_product_cat' ) ) ) );
 	if ( is_wp_error( $categories ) || ! $categories ) {
 		return;
 	}
@@ -393,6 +413,30 @@ function pot_category_navigation(): void {
 	<?php
 }
 add_action( 'wp_body_open', 'pot_category_navigation', 8 );
+
+/**
+ * Keep one discreet support path in the enclosed checkout header.
+ */
+function pot_checkout_help_link(): void {
+	$contact = get_page_by_path( 'contact' );
+	$url     = $contact instanceof WP_Post ? get_permalink( $contact ) : '';
+	$url     = pot_presentation_checkout_help_url(
+		pot_is_active_checkout(),
+		$contact instanceof WP_Post ? $contact->post_status : '',
+		is_string( $url ) ? $url : ''
+	);
+
+	if ( '' === $url ) {
+		return;
+	}
+
+	printf(
+		'<a class="pot-checkout-help" href="%1$s">%2$s</a>',
+		esc_url( $url ),
+		esc_html__( 'Need help?', 'purple-optimize-toolkit' )
+	);
+}
+add_action( 'wp_body_open', 'pot_checkout_help_link', 7 );
 
 /**
  * Replace the parent demo pattern's hash links with real local destinations.
@@ -533,10 +577,7 @@ add_action( 'wp_ajax_nopriv_pot_search_products', 'pot_search_products' );
 function pot_discount_percentage( WC_Product $product ): int {
 	$regular = (float) $product->get_regular_price();
 	$sale    = (float) $product->get_sale_price();
-	if ( $regular <= 0 || $sale <= 0 || $sale >= $regular ) {
-		return 0;
-	}
-	return (int) round( ( ( $regular - $sale ) / $regular ) * 100 );
+	return pot_presentation_discount_percentage( $regular, $sale, $product->is_on_sale() );
 }
 
 /**
@@ -559,9 +600,66 @@ function pot_filter_sale_badge_block( string $content, array $block ): string {
 	if ( $percentage < 1 ) {
 		return $content;
 	}
-	return '<span class="pot-discount-badge">' . esc_html( sprintf( __( 'Save %d%%', 'purple-optimize-toolkit' ), $percentage ) ) . '</span>' . $content;
+	return pot_presentation_sale_badge_html( $percentage, __( 'Save %d%%', 'purple-optimize-toolkit' ) );
 }
 add_filter( 'render_block', 'pot_filter_sale_badge_block', 10, 2 );
+
+/**
+ * Remove only native stock text replaced by the toolkit's factual warning.
+ *
+ * @param string     $html    Native availability markup.
+ * @param WC_Product $product Product object.
+ * @return string
+ */
+function pot_coordinate_product_stock_message( string $html, WC_Product $product ): string {
+	if ( ! is_product() ) {
+		return $html;
+	}
+
+	$settings = pot_settings();
+	$stock    = $product->managing_stock() ? $product->get_stock_quantity() : null;
+	$suppress = pot_presentation_suppresses_native_stock(
+		$product->managing_stock(),
+		null === $stock ? null : (int) $stock,
+		(int) $settings['stock_threshold'],
+		$product->is_in_stock(),
+		$product->is_on_backorder( 1 )
+	);
+
+	return $suppress ? '' : $html;
+}
+add_filter( 'woocommerce_get_stock_html', 'pot_coordinate_product_stock_message', 10, 2 );
+
+/**
+ * Coordinate WooCommerce's block stock indicator with the toolkit warning.
+ *
+ * @param string               $content Rendered block markup.
+ * @param array<string, mixed> $block   Parsed block.
+ * @return string
+ */
+function pot_filter_stock_indicator_block( string $content, array $block ): string {
+	if ( ! is_product() || 'woocommerce/product-stock-indicator' !== ( $block['blockName'] ?? '' ) ) {
+		return $content;
+	}
+
+	global $product;
+	if ( ! $product instanceof WC_Product ) {
+		return $content;
+	}
+
+	$settings = pot_settings();
+	$stock    = $product->managing_stock() ? $product->get_stock_quantity() : null;
+	$suppress = pot_presentation_suppresses_native_stock(
+		$product->managing_stock(),
+		null === $stock ? null : (int) $stock,
+		(int) $settings['stock_threshold'],
+		$product->is_in_stock(),
+		$product->is_on_backorder( 1 )
+	);
+
+	return pot_presentation_filter_stock_block( $content, (string) $block['blockName'], $suppress );
+}
+add_filter( 'render_block', 'pot_filter_stock_indicator_block', 9, 2 );
 
 /**
  * Build the product conversion panel from real product data.
@@ -1265,7 +1363,7 @@ function pot_checkout_trust_panel(): void {
 function pot_footer_policy_links(): void {
 	$settings = pot_settings();
 	$links    = pot_policy_links();
-	if ( empty( $settings['footer_policies'] ) || pot_is_offer_page() || ! $links ) {
+	if ( empty( $settings['footer_policies'] ) || pot_is_offer_page() || pot_is_active_checkout() || ! $links ) {
 		return;
 	}
 	?>

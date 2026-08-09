@@ -55,6 +55,18 @@ The toolkit intentionally does not manufacture purchases, names, viewer counts,
 or arbitrary scarcity. Showing real customer first names is an explicit setting
 that should only be used with an appropriate privacy basis.
 
+## Premium CRO presentation
+
+The default presentation uses a restrained product-led hierarchy: deep purple
+for identity, orange only for purchase decisions, flat CRO components, consistent
+4:5 catalog media, one current sale badge, and one factual stock message. The cart
+retains policy guidance while the active checkout becomes an enclosed flow with a
+clickable store identity and the single native Place Order action.
+
+Product, offer, wishlist, recent-purchase proof, countdown, sticky cart/checkout,
+and configurable upsell/downsell capabilities remain intact. Visual restraint does
+not remove merchant controls or manufacture urgency.
+
 See [`FEATURE-AUDIT.md`](FEATURE-AUDIT.md) for the Baymard 16-item implementation
 matrix and the remaining merchant-content or gateway dependencies.
 
@@ -95,3 +107,7 @@ Local before/after evidence is stored in [`docs/performance`](docs/performance).
 Those measurements validate this implementation, not production Core Web
 Vitals. Production page caching, object caching, image delivery, CDN behavior,
 and field performance monitoring remain hosting and deployment responsibilities.
+
+For this local project, every approved iteration is installed and verified on
+`purple-optimize.test`; a repository change alone is not treated as the completed
+iteration.
