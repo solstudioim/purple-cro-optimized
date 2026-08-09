@@ -1,0 +1,113 @@
+{
+  "measurement": {
+    "state": "after",
+    "date": "2026-08-09",
+    "runtime_commit": "43b2ffe",
+    "environment": "Local Laravel Valet at http://purple-optimize.test",
+    "http_method": "Five sequential curl --compressed requests per route; checkout used a temporary cookie jar containing product 19",
+    "browser_method": "Fresh browser navigation plus DOM, console, interaction, and declaration inventory checks",
+    "units": {
+      "time_starttransfer": "seconds",
+      "compressed_html": "bytes",
+      "asset_size": "bytes"
+    }
+  },
+  "http": {
+    "home": {
+      "route": "/",
+      "status": 200,
+      "time_starttransfer_samples": [0.244237, 0.171798, 0.175526, 0.176155, 0.174827],
+      "median_time_starttransfer": 0.175526,
+      "compressed_html_samples": [35014, 35014, 35014, 35014, 35014],
+      "median_compressed_html": 35014
+    },
+    "shop": {
+      "route": "/shop/",
+      "status": 200,
+      "time_starttransfer_samples": [0.184493, 0.180578, 0.180960, 0.178237, 0.184657],
+      "median_time_starttransfer": 0.180960,
+      "compressed_html_samples": [42023, 42023, 42023, 42023, 42023],
+      "median_compressed_html": 42023
+    },
+    "product": {
+      "route": "/product/coastal-blue-sweater/",
+      "status": 200,
+      "time_starttransfer_samples": [0.189398, 0.184797, 0.187080, 0.184820, 0.187202],
+      "median_time_starttransfer": 0.187080,
+      "compressed_html_samples": [39468, 39468, 39468, 39467, 39468],
+      "median_compressed_html": 39468
+    },
+    "cart": {
+      "route": "/cart/",
+      "status": 200,
+      "time_starttransfer_samples": [0.141540, 0.139748, 0.141685, 0.141088, 0.140760],
+      "median_time_starttransfer": 0.141088,
+      "compressed_html_samples": [46748, 46751, 46746, 46746, 46747],
+      "median_compressed_html": 46747
+    },
+    "checkout": {
+      "route": "/checkout/",
+      "status": 200,
+      "cart_product_id": 19,
+      "time_starttransfer_samples": [0.135413, 0.137703, 0.135258, 0.135729, 0.136434],
+      "median_time_starttransfer": 0.135729,
+      "compressed_html_samples": [42498, 42253, 42253, 42253, 42253],
+      "median_compressed_html": 42253
+    }
+  },
+  "browser_assets": {
+    "comparable_to_before": false,
+    "reason": "The earlier page-asset categorizer was unavailable in the verification browser; current DOM declarations are retained rather than presenting mismatched counts as equivalent.",
+    "home": { "unique_image_sources": 19, "script_elements": 27, "stylesheet_links": 16, "inline_svg": 7 },
+    "shop": { "unique_image_sources": 8, "script_elements": 44, "stylesheet_links": 21, "inline_svg": 11 },
+    "product": { "unique_image_sources": 18, "script_elements": 34, "stylesheet_links": 29, "inline_svg": 17 }
+  },
+  "idle_runtime": {
+    "empty_page_intervals": 0,
+    "empty_page_mutation_observers": 0,
+    "source": "tests/performance-contracts.test.mjs post-change passing output"
+  },
+  "toolkit_assets": {
+    "child_theme_css": { "raw": 3507, "gzip": 1286 },
+    "toolkit_css": { "raw": 18987, "gzip": 4428 },
+    "toolkit_js": { "raw": 17346, "gzip": 4847 },
+    "total_raw": 39840,
+    "total_gzip": 10561
+  },
+  "gallery": {
+    "primary": { "loading": "eager", "fetchpriority": "high", "has_srcset": true },
+    "non_primary_images_checked": 8,
+    "non_primary_loading": "lazy",
+    "non_primary_fetchpriority": "low",
+    "non_primary_have_srcset": true,
+    "gallery_buttons": 3
+  },
+  "regression_checks": {
+    "browser_console_errors": 0,
+    "countdown_updated_after_1_2_seconds": true,
+    "add_to_cart_badge": "1",
+    "single_view_cart_links": 1,
+    "cart_checkout_buttons": 1,
+    "cart_trust_guidance_before_cart": true,
+    "empty_cart_progress_hidden": true,
+    "empty_cart_checkout_buttons": 0,
+    "checkout_place_order_buttons": 1,
+    "checkout_field_status_labels": 8,
+    "checkout_top_progress_guidance_present": false,
+    "wishlist_toggle_updated": true,
+    "wishlist_page_product_present": true,
+    "instant_search_initialized": true,
+    "instant_search_result_action_verified": false,
+    "instant_search_note": "Browser automation could see the ready input but could not type into the search control; performance changes do not touch search code.",
+    "configured_inline_offer_present": false,
+    "offer_note": "No inline offer was configured in the measured checkout session; offer expiry behavior remains covered by unchanged secure server logic and existing runtime code."
+  },
+  "limitations": [
+    "Local Valet timing is directional and is not production field Core Web Vitals evidence.",
+    "WP-CLI could not connect to the Valet database, so backend profile and doctor data remained unavailable.",
+    "The verification browser did not expose Navigation Timing or Resource Timing entries.",
+    "Before and after browser asset categorization could not be repeated with identical instrumentation, so those counts are not compared.",
+    "The checkout benchmark uses an anonymous temporary session with one simple product and no completed order.",
+    "The open-media importer was not run because existing media must not be destructively rewritten."
+  ]
+}

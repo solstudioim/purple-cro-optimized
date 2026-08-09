@@ -1,6 +1,6 @@
 # Purple CRO Optimized feature audit
 
-Audit date: 2026-08-06
+Audit date: 2026-08-09
 
 Purple CRO Optimized combines common ecommerce conversion patterns with the
 [Baymard 16-item CRO framework](https://baymard.com/learn/ecommerce-cro).
@@ -27,6 +27,7 @@ behavior; it does not claim a guaranteed conversion lift for every audience.
 | Recent-purchase proof | Included, opt-in | Real processing/completed orders only; anonymous by default; names require explicit enablement. |
 | Checkout clarity and trust | Included | Progress language, factual reassurance, real policies, and Required/Optional labels. |
 | Product-content readiness | Included | Editor checklist for image coverage and clear short/detailed descriptions. |
+| Performance foundation | Included and locally measured | Idle toolkit timers and unrelated body observers are avoided, hidden gallery images use lazy/low priority loading, and future demo imports are bounded and compressed. This does not guarantee a production performance score. |
 
 ## Baymard 16-item CRO framework
 

@@ -78,3 +78,20 @@ Run the open-media importer only after the demo products exist:
 The deterministic seeder does not call external APIs automatically. The curated
 manifest is stored in `tools/open-media-gallery.json`, so API search ordering
 cannot silently change the catalog.
+
+## Performance
+
+The toolkit starts countdown intervals and checkout-placement observers only on
+pages where their matching components exist, and disconnects them when no work
+remains. The child theme keeps the visible product image eager and high priority
+while marking hidden gallery images lazy and low priority without removing
+responsive sources or gallery interactions.
+
+Future demo-photo imports are bounded to 1600 pixels, saved at quality 82, and
+converted to WebP when the active WordPress image editor supports it. Existing
+attachments are not rewritten.
+
+Local before/after evidence is stored in [`docs/performance`](docs/performance).
+Those measurements validate this implementation, not production Core Web
+Vitals. Production page caching, object caching, image delivery, CDN behavior,
+and field performance monitoring remain hosting and deployment responsibilities.
