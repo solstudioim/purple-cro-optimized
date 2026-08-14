@@ -9,6 +9,14 @@ const theme = path.join(root, 'wp-content/themes/purple-optimize');
 const read = (relativePath) => fs.readFileSync(path.join(theme, relativePath), 'utf8');
 const toolkitJs = fs.readFileSync(path.join(root, 'wp-content/plugins/purple-optimize-toolkit/assets/toolkit.js'), 'utf8');
 
+test('README displays the current child theme release', () => {
+	const stylesheet = read('style.css');
+	const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+	const version = stylesheet.match(/^Version:\s*(\S+)/m)?.[1];
+	assert.ok(version, 'Theme stylesheet must declare a version');
+	assert.ok(readme.includes(`**Current child-theme release:** \`${version}\``));
+});
+
 test('the child theme owns every primary commerce template', () => {
 	for (const template of ['front-page.html', 'archive-product.html', 'single-product.html', 'page-cart.html', 'page-checkout.html']) {
 		assert.ok(fs.existsSync(path.join(theme, 'templates', template)), `Missing ${template}`);
