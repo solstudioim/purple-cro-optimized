@@ -8,6 +8,8 @@ implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
 **Current toolkit release:** `0.7.4`
 
+**Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
+
 The project is deliberately split into two packages:
 
 - `wp-content/themes/purple-optimize`: a child theme for presentation and layout.

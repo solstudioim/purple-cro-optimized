@@ -8,6 +8,21 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const page = fs.readFileSync(path.join(root, 'docs/demo/index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'docs/demo/styles.css'), 'utf8');
 
+test('GitHub Pages workflow deploys the demo directory with required permissions', () => {
+  const workflow = fs.readFileSync(path.join(root, '.github/workflows/pages.yml'), 'utf8');
+
+  for (const requiredValue of [
+    'actions/configure-pages',
+    'actions/upload-pages-artifact',
+    'actions/deploy-pages',
+    'pages: write',
+    'id-token: write',
+    'path: docs/demo',
+  ]) {
+    assert.match(workflow, new RegExp(requiredValue));
+  }
+});
+
 test('demo page exposes an accessible non-autoplay video', () => {
   assert.match(page, /<video[^>]+controls/);
   assert.match(page, /poster="assets\/purple-cro-demo-poster\.webp"/);
