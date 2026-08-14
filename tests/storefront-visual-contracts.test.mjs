@@ -97,3 +97,24 @@ test('sticky cart keeps the currency symbol and price on one line', () => {
 	assert.match(amount, /white-space:\s*nowrap/);
 	assert.match(declarations(toolkitCss, '.pot-sticky-cart .woocommerce-Price-currencySymbol'), /display:\s*inline/);
 });
+
+test('desktop cart and checkout cards have a deliberate gutter', () => {
+	assert.match(themeCss, /@media \(min-width:\s*782px\)[\s\S]*\.woocommerce-cart \.wc-block-components-sidebar-layout,[\s\S]*\.woocommerce-checkout \.wc-block-components-sidebar-layout\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:[^}]*gap:\s*clamp\(/);
+	assert.match(themeCss, /@media \(min-width:\s*782px\)[\s\S]*\.woocommerce-cart \.wc-block-cart__main,[\s\S]*\.woocommerce-checkout \.wc-block-checkout__sidebar\s*\{[^}]*width:\s*auto\s*!important/);
+});
+
+test('commerce banners and transactional layout share one container width', () => {
+	const surfaces = declarations(themeCss, `.pot-cart-layout .pot-shipping-progress,
+.pot-cart-layout .pot-checkout-trust,
+.pot-checkout-layout .pot-shipping-progress,
+.pot-checkout-layout .pot-checkout-trust`);
+	assert.match(surfaces, /width:\s*100%/);
+	assert.match(surfaces, /max-width:\s*none/);
+	assert.match(surfaces, /margin-inline:\s*0/);
+});
+
+test('checkout help and security labels cannot overlap', () => {
+	assert.match(declarations(themeCss, 'body.pot-enclosed-checkout .pot-secure-checkout'), /margin-right:\s*8\.5rem\s*!important/);
+	assert.match(themeCss, /@media \(max-width:\s*520px\)[\s\S]*\.pot-checkout-help\s*\{[^}]*display:\s*none/);
+	assert.match(themeCss, /@media \(max-width:\s*520px\)[\s\S]*\.pot-secure-checkout\s*\{[^}]*margin-right:\s*0/);
+});

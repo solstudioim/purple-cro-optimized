@@ -56,6 +56,14 @@ test('cart and checkout keep one native transactional content surface', () => {
 	assert.doesNotMatch(checkout, /template-part \{\"slug\":\"footer\"/);
 });
 
+test('catalog navigation follows the parent Purple wide container', () => {
+	const catalog = read('templates/archive-product.html');
+	assert.match(catalog, /wp:group \{"align":"wide","className":"pot-catalog-intro","layout":\{"type":"constrained"\}\}/);
+	const intro = catalog.match(/pot-catalog-intro[\s\S]*?<!-- \/wp:group -->/u)?.[0] || '';
+	assert.match(intro, /wp:woocommerce\/breadcrumbs/);
+	assert.match(intro, /pot-catalog-heading/);
+});
+
 test('return-to-buy-box links enhance native anchors without submitting a duplicate form', () => {
 	assert.match(toolkitJs, /function setupReturnToBuyBox\(\)/);
 	assert.match(toolkitJs, /querySelectorAll\('\.pot-return-to-buy-box'\)/);
