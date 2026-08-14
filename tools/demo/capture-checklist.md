@@ -16,7 +16,7 @@
 - [x] `14-post-purchase.png` — explicit post-purchase offer
 - [x] `15-post-purchase-detail.png` — separate-checkout explanation
 - [x] `16-toolkit-valid.png` — valid offer selections
-- [x] `17-toolkit-warning.png` — invalid product warning example
+- [x] `17-toolkit-warning.png` — missing upsell ID 999999 from frame 16's pre-checkout baseline; downsell ID 15 unchanged
 - [x] `18-end-card-source.png` — clean repository/source end card input
 
 Safety audit: no credentials, real names, personal email or street addresses, order IDs, browser notifications, unrelated tabs, or live-site interaction.
@@ -26,4 +26,5 @@ Safety audit: no credentials, real names, personal email or street addresses, or
 - [x] `13-order-confirmed.png` contains only the genuine rendered WooCommerce order-received page; no replacement storefront copy or redaction was injected.
 - [x] `11-checkout-contact.png` and `12-checkout-payment.png` visibly identify the temporarily relabeled gateway as local demo/test payment with no external processing.
 - [x] `16-toolkit-valid.png` visibly shows valid upsell ID 13 and downsell ID 15 together.
+- [x] `17-toolkit-warning.png` changes only the frame 16 upsell selection to missing product ID 999999; placement, downsell, discounts, countdowns, and reassurance settings remain identical.
 - [x] Gateway settings, valid offer IDs, pre-checkout placement, and the isolated cart were restored and read back after capture.
