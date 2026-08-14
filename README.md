@@ -79,6 +79,13 @@ Install the parent theme, child theme, and plugin in that order. Activate
 
 Requirements: WordPress 6.7 or newer, PHP 7.4 or newer, and WooCommerce.
 
+After activation, open the toolkit settings at **WP Admin → WooCommerce →
+Purple Optimize**. The direct admin path is
+`/wp-admin/admin.php?page=purple-optimize`. The menu is available to
+Administrators and Shop Managers with the `manage_woocommerce` capability. If
+it is missing, confirm that both WooCommerce and Purple Optimize Toolkit are
+active.
+
 Use `[purple_optimize_wishlist]` on a page to render the browser wishlist.
 
 For a populated development store, run:

@@ -17,6 +17,13 @@ test('README displays the current child theme release', () => {
 	assert.ok(readme.includes(`**Current child-theme release:** \`${version}\``));
 });
 
+test('README identifies the toolkit admin menu and access requirements', () => {
+	const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+	assert.match(readme, /WooCommerce →\s+Purple Optimize/);
+	assert.match(readme, /admin\.php\?page=purple-optimize/);
+	assert.match(readme, /manage_woocommerce/);
+});
+
 test('the child theme owns every primary commerce template', () => {
 	for (const template of ['front-page.html', 'archive-product.html', 'single-product.html', 'page-cart.html', 'page-checkout.html']) {
 		assert.ok(fs.existsSync(path.join(theme, 'templates', template)), `Missing ${template}`);
