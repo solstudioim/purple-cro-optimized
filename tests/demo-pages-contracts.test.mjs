@@ -29,10 +29,28 @@ test('demo page has a narrow responsive layout', () => {
 
 test('demo media build inputs and Pages assets exist', () => {
   const buildScript = path.join(root, 'tools/demo/build-video.sh');
+  const reproducibilityCheck = path.join(root, 'tools/demo/verify-video-reproducibility.sh');
   const captions = path.join(root, 'tools/demo/captions.txt');
 
   assert.ok(fs.existsSync(buildScript), 'expected reproducible video build script');
+  assert.ok(fs.existsSync(reproducibilityCheck), 'expected repeat-build video verifier');
   assert.ok(fs.existsSync(captions), 'expected storyboard captions');
+
+  const buildText = fs.readFileSync(buildScript, 'utf8');
+  for (const requiredSetting of [
+    '-threads 1',
+    '-filter_threads 1',
+    '-filter_complex_threads 1',
+    '-fflags +bitexact',
+    '-map_metadata -1',
+  ]) {
+    assert.match(buildText, new RegExp(requiredSetting.replace(/[+]/g, '\\+')));
+  }
+
+  const reproducibilityText = fs.readFileSync(reproducibilityCheck, 'utf8');
+  assert.match(reproducibilityText, /build-video\.sh/);
+  assert.match(reproducibilityText, /shasum -a 256/);
+  assert.match(reproducibilityText, /hashes differ/);
 
   const captionText = fs.readFileSync(captions, 'utf8');
   for (const requiredCaption of [
@@ -52,4 +70,38 @@ test('demo media build inputs and Pages assets exist', () => {
     fs.existsSync(path.join(root, 'docs/demo/assets/purple-cro-demo-poster.webp')),
     'expected Pages poster asset',
   );
+});
+
+test('storyboard text alternative mirrors the 18-frame demo sequence', () => {
+  const items = [...page.matchAll(/<li>(.*?)<\/li>/gs)].map((match) => match[1]);
+  assert.equal(items.length, 18, 'expected one text-alternative item per video frame');
+
+  const requiredSequence = [
+    'Purple CRO Optimized',
+    'discovery, trust, and product hierarchy',
+    'catalog navigation',
+    'focused purchase surface',
+    'Mobile sticky cart',
+    'accessible cart confirmation',
+    'Cart summary',
+    'Pre-checkout upsell',
+    'Downsell appears only after the upsell is rejected',
+    'Downsell accepted',
+    'Native WooCommerce checkout',
+    'Test payment',
+    'Completed order confirmed',
+    'Post-purchase offer',
+    'separate checkout',
+    'Toolkit validation',
+    'Warnings flag invalid products',
+    'Built on Woo Purple',
+  ];
+
+  for (const [index, expected] of requiredSequence.entries()) {
+    assert.match(items[index], new RegExp(expected));
+  }
+
+  for (const unsupportedClaim of ['instant search', 'variations', 'wishlist']) {
+    assert.doesNotMatch(page, new RegExp(unsupportedClaim, 'i'));
+  }
 });

@@ -12,6 +12,7 @@ output_directory=$2
 script_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 captions_file="$script_directory/captions.txt"
 font_file=/System/Library/Fonts/Supplemental/Arial.ttf
+x264_parameters='threads=1:lookahead_threads=1:sliced_threads=0:sync-lookahead=0'
 
 frames=(
   01-opening.png
@@ -100,25 +101,29 @@ for index in "${!frames[@]}"; do
   segment_file="$temporary_directory/segment-$index.ts"
   printf '%s\n' "${caption_line#*|}" > "$caption_file"
 
-  magick -size 1500x100 -background none -fill white -font "$font_file" -pointsize 38 \
-    -gravity center "caption:$(< "$caption_file")" "$caption_text_image"
-  magick -size 1920x1080 xc:none "$caption_text_image" -gravity south -geometry +0+20 \
-    -compose over -composite "$caption_layer"
+  magick -limit thread 1 -size 1500x100 -background none -fill white -font "$font_file" -pointsize 38 \
+    -gravity center "caption:$(< "$caption_file")" -strip "$caption_text_image"
+  magick -limit thread 1 -size 1920x1080 xc:none "$caption_text_image" -gravity south -geometry +0+20 \
+    -compose over -composite -strip "$caption_layer"
 
   filter="[0:v]scale=1920:930:force_original_aspect_ratio=decrease,pad=1920:930:(ow-iw)/2:(oh-ih):color=0xf7f1e8,pad=1920:1080:0:0:color=0xf7f1e8,zoompan=z='min(zoom+0.00045,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=$frame_count:s=1920x1080:fps=30,drawbox=x=100:y=940:w=1720:h=140:color=0x32135f@0.96:t=fill[base];[base][1:v]overlay=0:0,fade=t=in:st=0:d=0.35,fade=t=out:st=$fade_out_start:d=0.55[video]"
 
-  ffmpeg -hide_banner -loglevel error -y -loop 1 -i "$frame_directory/$frame" -loop 1 -i "$caption_layer" \
-    -filter_complex "$filter" -map '[video]' -frames:v "$frame_count" -an -c:v libx264 -preset slow \
-    -crf 24 -pix_fmt yuv420p -r 30 -f mpegts "$segment_file"
+  ffmpeg -hide_banner -loglevel error -y -threads 1 -filter_threads 1 -filter_complex_threads 1 \
+    -fflags +bitexact -bitexact -loop 1 -i "$frame_directory/$frame" -loop 1 -i "$caption_layer" \
+    -filter_complex "$filter" -map '[video]' -frames:v "$frame_count" -an -map_metadata -1 \
+    -c:v libx264 -threads 1 -x264-params "$x264_parameters" -flags:v +bitexact -preset slow -crf 24 \
+    -pix_fmt yuv420p -r 30 -metadata creation_time=1970-01-01T00:00:00Z -f mpegts "$segment_file"
   printf "file '%s'\n" "$segment_file" >> "$concat_list"
 done
 
-ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i "$concat_list" \
-  -map 0:v:0 -an -c:v libx264 -preset slow -b:v 1700k -maxrate 1700k -bufsize 3400k \
-  -pix_fmt yuv420p -movflags +faststart "$temporary_directory/purple-cro-demo.mp4"
+ffmpeg -hide_banner -loglevel error -y -threads 1 -filter_threads 1 -filter_complex_threads 1 \
+  -fflags +bitexact -bitexact -f concat -safe 0 -i "$concat_list" -map 0:v:0 -an -map_metadata -1 \
+  -c:v libx264 -threads 1 -x264-params "$x264_parameters" -flags:v +bitexact -preset slow \
+  -b:v 1700k -maxrate 1700k -bufsize 3400k -pix_fmt yuv420p -metadata creation_time=1970-01-01T00:00:00Z \
+  -movflags +faststart "$temporary_directory/purple-cro-demo.mp4"
 
-magick "$frame_directory/04-product.png" -resize '1920x1080>' -gravity center -background '#f7f1e8' \
-  -extent 1920x1080 -quality 88 "$temporary_directory/purple-cro-demo-poster.webp"
+magick -limit thread 1 "$frame_directory/04-product.png" -resize '1920x1080>' -gravity center \
+  -background '#f7f1e8' -extent 1920x1080 -quality 88 -strip "$temporary_directory/purple-cro-demo-poster.webp"
 
 mv -f "$temporary_directory/purple-cro-demo.mp4" "$output_directory/purple-cro-demo.mp4"
 mv -f "$temporary_directory/purple-cro-demo-poster.webp" "$output_directory/purple-cro-demo-poster.webp"
