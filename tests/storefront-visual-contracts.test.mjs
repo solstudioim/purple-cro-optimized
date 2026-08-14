@@ -22,6 +22,20 @@ test('catalog presentation is stable and product-led', () => {
 	assert.match(declarations(themeCss, '.wp-block-woocommerce-product-image img'), /aspect-ratio:\s*4\s*\/\s*5/);
 });
 
+test('the storefront uses the approved warm editorial token system', () => {
+	assert.match(themeCss, /--pot-canvas:\s*#f7f4ee/);
+	assert.match(themeCss, /--pot-ink:\s*#17131f/);
+	assert.match(themeCss, /--pot-action:\s*#c2410c/);
+	assert.match(themeCss, /--pot-radius-lg:\s*18px/);
+	assert.doesNotMatch(themeCss, /linear-gradient|radial-gradient/);
+});
+
+test('major journey surfaces have explicit visual boundaries', () => {
+	for (const selector of ['.pot-home-hero', '.pot-product-decision', '.pot-product-proof', '.pot-cart-summary']) {
+		assert.match(themeCss, new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{`), `Missing ${selector}`);
+	}
+});
+
 test('purchase actions use one strong color without decorative movement', () => {
 	const actions = declarations(themeCss, '.single_add_to_cart_button,\n.wp-block-woocommerce-product-button .wp-block-button__link,\n.wc-block-cart__submit-button,\n.wc-block-components-checkout-place-order-button');
 	assert.match(actions, /background:\s*var\(--pot-action\)/);
@@ -47,4 +61,39 @@ test('active checkout is enclosed and native actions remain the sticky target', 
 	const sticky = declarations(toolkitCss, 'body.pot-mobile-sticky-checkout-enabled .wc-block-cart__submit-container,\n\tbody.pot-mobile-sticky-checkout-enabled .wc-block-checkout__actions_row');
 	assert.match(sticky, /position:\s*fixed/);
 	assert.doesNotMatch(toolkitCss, /@keyframes\s+pot-(timer-tick|urgency-pulse)/);
+});
+
+test('the promotion strip can wrap without mobile overflow', () => {
+	assert.match(declarations(toolkitCss, '.pot-promo'), /flex-wrap:\s*wrap/);
+});
+
+test('narrow checkout fields can stack without horizontal overflow', () => {
+	assert.match(themeCss, /\.wc-block-components-address-form__first_name[^{]*\.wc-block-components-address-form__phone\s*\{[^}]*flex:\s*1\s+0\s+100%\s*!important/);
+	assert.match(themeCss, /\.pot-checkout-header \.wp-block-site-title\s*\{[^}]*font-size:\s*0\.95rem/);
+	assert.match(themeCss, /\.wc-block-components-sidebar-layout\s*\{[^}]*min-width:\s*0\s*!important[^}]*max-width:\s*100%\s*!important/);
+	assert.match(themeCss, /\.pot-shipping-progress\s*\{[^}]*max-width:\s*calc\(100vw - 2rem\)\s*!important/);
+});
+
+test('footer typography remains readable against the dark footer surface', () => {
+	const footerText = declarations(themeCss, `.pot-site-footer,
+.pot-site-footer *`);
+	assert.match(footerText, /color:\s*#fff\s*!important/);
+	assert.match(declarations(themeCss, '.pot-site-footer a'), /color:\s*#fff\s*!important/);
+});
+
+test('product sticky cart is mobile-only and has success animation styles', () => {
+	assert.match(declarations(toolkitCss, '.pot-sticky-cart'), /display:\s*none/);
+	assert.match(toolkitCss, /@media \(max-width:\s*782px\)[\s\S]*\.pot-sticky-cart\s*\{[^}]*display:\s*flex/);
+	assert.match(toolkitCss, /\.pot-cart-flyer\s*\{/);
+	assert.match(toolkitCss, /\.pot-sticky-cart\.is-added/);
+	assert.match(toolkitCss, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.pot-cart-flyer\s*\{[^}]*display:\s*none/);
+});
+
+test('sticky cart keeps the currency symbol and price on one line', () => {
+	assert.match(declarations(toolkitCss, '.pot-sticky-cart > div > span > span'), /display:\s*block/);
+	assert.doesNotMatch(toolkitCss, /\.pot-sticky-cart span span\s*\{/);
+	const amount = declarations(toolkitCss, '.pot-sticky-cart .woocommerce-Price-amount');
+	assert.match(amount, /display:\s*inline-flex/);
+	assert.match(amount, /white-space:\s*nowrap/);
+	assert.match(declarations(toolkitCss, '.pot-sticky-cart .woocommerce-Price-currencySymbol'), /display:\s*inline/);
 });

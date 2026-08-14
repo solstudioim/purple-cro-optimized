@@ -2,6 +2,7 @@
 	'use strict';
 
 	const config = window.purpleOptimize || {};
+	const features = config.features || {};
 	const wishlistKey = 'purpleOptimizeWishlist';
 	const escapeHtml = (value) => String(value).replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
 	const getWishlist = () => {
@@ -177,16 +178,57 @@
 		const sticky = document.querySelector('.pot-sticky-cart');
 		const original = document.querySelector('.wp-block-woocommerce-add-to-cart-with-options, form.cart, .single_add_to_cart_button');
 		if (!sticky || !original) return;
+		const mobile = window.matchMedia('(max-width: 782px)');
+		if (!mobile.matches) return;
+		const button = sticky.querySelector('button');
+		const label = sticky.querySelector('.pot-sticky-cart-label');
+		const status = sticky.querySelector('.pot-sticky-cart-status');
+		const initialLabel = label?.textContent || '';
+		let resetTimer;
+
+		const animateToCart = () => {
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			const image = sticky.querySelector('img');
+			const target = document.querySelector('.wc-block-mini-cart__button, .wp-block-woocommerce-mini-cart, .wc-block-mini-cart');
+			if (!image || !target) return;
+			const start = image.getBoundingClientRect();
+			const end = target.getBoundingClientRect();
+			const flyer = image.cloneNode();
+			flyer.className = 'pot-cart-flyer';
+			flyer.setAttribute('aria-hidden', 'true');
+			flyer.style.left = `${start.left}px`;
+			flyer.style.top = `${start.top}px`;
+			document.body.append(flyer);
+			window.requestAnimationFrame(() => {
+				flyer.style.transform = `translate(${end.left + (end.width / 2) - start.left}px, ${end.top + (end.height / 2) - start.top}px) scale(.2)`;
+				flyer.style.opacity = '0';
+			});
+			window.setTimeout(() => flyer.remove(), 600);
+		};
+
+		const showAdded = () => {
+			window.clearTimeout(resetTimer);
+			animateToCart();
+			sticky.classList.add('is-added');
+			if (label) label.textContent = config.addedToCart || 'Added to cart ✓';
+			if (status) status.textContent = config.addedToCart || 'Item added to cart';
+			resetTimer = window.setTimeout(() => {
+				sticky.classList.remove('is-added');
+				if (label) label.textContent = initialLabel;
+			}, 1800);
+		};
 		const observer = new IntersectionObserver(([entry]) => {
 			sticky.classList.toggle('is-visible', !entry.isIntersecting);
 			sticky.setAttribute('aria-hidden', entry.isIntersecting ? 'true' : 'false');
 		}, { threshold: 0 });
 		observer.observe(original);
-		sticky.querySelector('button').addEventListener('click', () => {
+		button.addEventListener('click', () => {
 			const addButton = document.querySelector('.single_add_to_cart_button:not(.disabled), .wp-block-woocommerce-product-button button:not(:disabled)');
 			if (sticky.dataset.productType === 'simple' && addButton) addButton.click();
 			else original.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
 		});
+		document.body.addEventListener('wc-blocks_added_to_cart', showAdded);
+		if (window.jQuery) window.jQuery(document.body).on('added_to_cart', showAdded);
 	}
 
 	function setupSingleProductViewCart() {
@@ -347,31 +389,86 @@
 		const interval = window.setInterval(() => { if (!update()) window.clearInterval(interval); }, 1000);
 	}
 
-	function setupCartEmptyState() {
+	function setupShippingProgress() {
 		const cartRoot = document.querySelector('.wp-block-woocommerce-cart, .wc-block-cart');
-		if (!cartRoot) return;
-		const syncEmptyCart = () => {
-			const empty = Boolean(document.querySelector('.wc-block-cart__empty-cart__title, .wp-block-woocommerce-empty-cart-block'));
-			const progress = document.querySelector('#pot-shipping-progress');
-			if (progress) progress.hidden = empty;
+		const progress = document.querySelector('#pot-shipping-progress');
+		if (!cartRoot || !progress) return;
+		const data = window.wp?.data;
+		const message = progress.querySelector('p');
+		const bar = progress.querySelector('[role="progressbar"]');
+		const fill = bar?.querySelector('span');
+		const threshold = Number(progress.dataset.target || config.freeShipping || 0);
+		if (!data?.select || !data?.subscribe || !message || !bar || !fill || threshold <= 0) return;
+
+		let lastSubtotal;
+		let scheduled = false;
+		const formatAmount = (amount, totals) => {
+			const decimals = Number(totals.currency_minor_unit ?? 2);
+			const decimal = totals.currency_decimal_separator || '.';
+			const numeric = amount.toFixed(decimals).replace('.', decimal);
+			return `${totals.currency_prefix || config.currencySymbol || ''}${numeric}${totals.currency_suffix || ''}`;
 		};
-		syncEmptyCart();
-		new MutationObserver(syncEmptyCart).observe(cartRoot, { childList: true, subtree: true });
+		const update = () => {
+			scheduled = false;
+			const totals = data.select('wc/store/cart')?.getCartTotals?.();
+			if (!totals || totals.total_items === '') return;
+			const decimals = Number(totals.currency_minor_unit ?? 2);
+			const subtotal = Number(totals.total_items) / (10 ** decimals);
+			if (!Number.isFinite(subtotal) || subtotal === lastSubtotal) return;
+			lastSubtotal = subtotal;
+			progress.hidden = subtotal <= 0;
+			const remaining = Math.max(0, threshold - subtotal);
+			const percentage = Math.min(100, (subtotal / threshold) * 100);
+			message.textContent = remaining > 0
+				? (config.freeShippingRemaining || 'Add %s more to reach the configured free-shipping threshold.').replace('%s', formatAmount(remaining, totals))
+				: (config.freeShippingReached || 'You reached the configured free-shipping threshold.');
+			bar.setAttribute('aria-valuenow', String(Math.round(percentage)));
+			fill.style.width = `${percentage}%`;
+		};
+		const schedule = () => {
+			if (scheduled) return;
+			scheduled = true;
+			window.requestAnimationFrame(update);
+		};
+		update();
+		data.subscribe(schedule);
+	}
+
+	function setupReturnToBuyBox() {
+		const buyBox = document.querySelector('#pot-product-buy-box');
+		if (!buyBox) return;
+		document.querySelectorAll('.pot-return-to-buy-box').forEach((link) => {
+			link.addEventListener('click', (event) => {
+				event.preventDefault();
+				buyBox.scrollIntoView({
+					behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+					block: 'center',
+				});
+				window.setTimeout(() => buyBox.focus({ preventScroll: true }), 250);
+			});
+		});
 	}
 
 	document.addEventListener('DOMContentLoaded', () => {
-		setupPromoCode();
-		setupSearch();
-		setupWishlistButtons();
-		renderWishlistPage();
-		setupCountdowns();
-		setupStickyCart();
-		setupSingleProductViewCart();
-		moveShippingProgress();
-		moveCheckoutEnhancements();
-		labelCheckoutFields();
-		setupRecentPurchases();
-		setupOfferCountdown();
-		setupCartEmptyState();
+		if (features.promo) setupPromoCode();
+		if (features.search) setupSearch();
+		if (features.wishlist) {
+			setupWishlistButtons();
+			renderWishlistPage();
+		}
+		if (features.countdowns) setupCountdowns();
+		if (features.product) {
+			setupStickyCart();
+			setupSingleProductViewCart();
+			setupReturnToBuyBox();
+		}
+		if (features.commerce) {
+			moveShippingProgress();
+			moveCheckoutEnhancements();
+		}
+		if (features.checkout) labelCheckoutFields();
+		if (features.recentPurchases) setupRecentPurchases();
+		if (features.offer) setupOfferCountdown();
+		if (features.cart) setupShippingProgress();
 	});
 })();

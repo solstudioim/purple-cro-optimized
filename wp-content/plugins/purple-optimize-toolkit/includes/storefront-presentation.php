@@ -128,3 +128,64 @@ function pot_presentation_filter_stock_block( string $content, string $block_nam
 
 	return $content;
 }
+
+/**
+ * Calculate option pricing from current WooCommerce values.
+ *
+ * @param float $regular Regular price.
+ * @param float $current Current price.
+ * @return array{regular: float, current: float, saved: float, percentage: int}
+ */
+function pot_presentation_price_economics( float $regular, float $current ): array {
+	if ( $regular <= 0 || $current <= 0 || $current > $regular ) {
+		return array(
+			'regular'    => max( 0.0, $regular ),
+			'current'    => max( 0.0, $current ),
+			'saved'      => 0.0,
+			'percentage' => 0,
+		);
+	}
+
+	$saved = $regular - $current;
+	return array(
+		'regular'    => $regular,
+		'current'    => $current,
+		'saved'      => $saved,
+		'percentage' => (int) round( ( $saved / $regular ) * 100 ),
+	);
+}
+
+/**
+ * Return a popularity label only when the merchant explicitly configured it.
+ *
+ * @param bool   $configured Whether the label is explicitly enabled.
+ * @param string $label      Merchant-authored label.
+ * @return string
+ */
+function pot_presentation_popularity_label( bool $configured, string $label ): string {
+	return $configured ? trim( $label ) : '';
+}
+
+/**
+ * Confirm that a short policy summary retains material limitations.
+ *
+ * @param string   $summary        Policy summary.
+ * @param string[] $material_terms Terms that must remain visible.
+ * @return bool
+ */
+function pot_presentation_policy_summary_is_safe( string $summary, array $material_terms ): bool {
+	$plain      = function_exists( 'wp_strip_all_tags' ) ? wp_strip_all_tags( $summary ) : strip_tags( $summary );
+	$normalized = strtolower( trim( $plain ) );
+	if ( '' === $normalized ) {
+		return false;
+	}
+
+	foreach ( $material_terms as $term ) {
+		$term = strtolower( trim( (string) $term ) );
+		if ( '' !== $term && false === strpos( $normalized, $term ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}

@@ -52,4 +52,15 @@ pot_test_expect( '' === pot_presentation_filter_stock_block( $native_stock_block
 pot_test_expect( $native_stock_block === pot_presentation_filter_stock_block( $native_stock_block, 'woocommerce/product-stock-indicator', false ), 'The stock block must remain when no toolkit warning replaces it.' );
 pot_test_expect( $native_stock_block === pot_presentation_filter_stock_block( $native_stock_block, 'core/paragraph', true ), 'Unrelated blocks must never be removed.' );
 
+$economics = pot_presentation_price_economics( 120.0, 90.0 );
+pot_test_expect( 120.0 === $economics['regular'], 'Option economics must retain the regular price.' );
+pot_test_expect( 90.0 === $economics['current'], 'Option economics must retain the current price.' );
+pot_test_expect( 30.0 === $economics['saved'], 'Option economics must calculate real savings.' );
+pot_test_expect( 25 === $economics['percentage'], 'Option economics must calculate a real percentage.' );
+pot_test_expect( 0 === pot_presentation_price_economics( 90.0, 120.0 )['percentage'], 'Invalid price relationships must not manufacture savings.' );
+pot_test_expect( '' === pot_presentation_popularity_label( false, 'Popular' ), 'Popularity labels require explicit merchant configuration.' );
+pot_test_expect( 'Popular' === pot_presentation_popularity_label( true, ' Popular ' ), 'Configured popularity labels must be normalized.' );
+pot_test_expect( pot_presentation_policy_summary_is_safe( '30-day returns; return shipping applies.', array( 'return shipping' ) ), 'Material limitations must remain visible in policy summaries.' );
+pot_test_expect( ! pot_presentation_policy_summary_is_safe( 'Easy 30-day returns.', array( 'return shipping' ) ), 'Policy summaries must not omit material limitations.' );
+
 fwrite( STDOUT, "Storefront presentation contracts passed.\n" );

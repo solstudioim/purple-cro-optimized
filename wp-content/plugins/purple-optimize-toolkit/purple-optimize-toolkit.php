@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.7.0
+ * Version: 0.7.3
  * Requires at least: 6.7
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.7.0' );
+define( 'POT_VERSION', '0.7.3' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -296,6 +296,36 @@ function pot_render_settings_page(): void {
 }
 
 /**
+ * Return the runtime features relevant to the current route.
+ *
+ * The bundle remains cacheable while inactive features avoid observers, timers,
+ * storage access, and DOM work on routes where they cannot render.
+ *
+ * @param array<string, mixed> $settings Plugin settings.
+ * @return array<string, bool>
+ */
+function pot_frontend_feature_flags(array $settings): array {
+	$is_offer   = pot_is_offer_page();
+	$is_product = is_product();
+	$is_cart    = is_cart();
+	$is_checkout = is_checkout();
+	$is_account = is_account_page();
+
+	return array(
+		'promo'           => ! empty( $settings['promo_enabled'] ) && ! $is_offer && ! pot_is_active_checkout(),
+		'search'          => ! empty( $settings['instant_search'] ) && ! $is_offer && ! pot_is_active_checkout(),
+		'wishlist'        => ! empty( $settings['wishlist'] ) && ( $is_product || is_page( 'wishlist' ) ),
+		'countdowns'      => $is_product || $is_offer,
+		'product'         => $is_product,
+		'cart'            => $is_cart,
+		'checkout'        => pot_is_active_checkout(),
+		'commerce'        => $is_cart || $is_checkout || $is_account || $is_offer,
+		'offer'           => $is_offer || ( ! empty( $settings['offer_funnel'] ) && ( $is_cart || $is_checkout ) ),
+		'recentPurchases' => ! empty( $settings['recent_sales'] ) && ! $is_offer && ! $is_cart && ! $is_checkout && ! $is_account,
+	);
+}
+
+/**
  * Enqueue the small front-end bundle.
  */
 function pot_enqueue_assets(): void {
@@ -306,11 +336,21 @@ function pot_enqueue_assets(): void {
 	$settings = pot_settings();
 	$category = is_product_category() ? get_queried_object_id() : 0;
 	wp_enqueue_style( 'purple-optimize-toolkit', POT_URL . 'assets/toolkit.css', array(), POT_VERSION );
-	wp_enqueue_script( 'purple-optimize-toolkit', POT_URL . 'assets/toolkit.js', array(), POT_VERSION, true );
+	wp_enqueue_script(
+		'purple-optimize-toolkit',
+		POT_URL . 'assets/toolkit.js',
+		array(),
+		POT_VERSION,
+		array(
+			'in_footer' => true,
+			'strategy'  => 'defer',
+		)
+	);
 	wp_localize_script(
 		'purple-optimize-toolkit',
 		'purpleOptimize',
 		array(
+			'features'          => pot_frontend_feature_flags( $settings ),
 			'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 			'nonce'             => wp_create_nonce( 'pot_search_products' ),
 			'instantSearch'     => ! empty( $settings['instant_search'] ),
@@ -333,6 +373,9 @@ function pot_enqueue_assets(): void {
 			'secondsLabel'      => __( 'Seconds', 'purple-optimize-toolkit' ),
 			'cartUrl'           => wc_get_cart_url(),
 			'viewCart'          => __( 'View cart', 'purple-optimize-toolkit' ),
+			'addedToCart'       => __( 'Added to cart ✓', 'purple-optimize-toolkit' ),
+			'freeShippingReached' => __( 'You reached the configured free-shipping threshold.', 'purple-optimize-toolkit' ),
+			'freeShippingRemaining' => __( 'Add %s more to reach the configured free-shipping threshold.', 'purple-optimize-toolkit' ),
 		)
 	);
 }
@@ -1420,7 +1463,7 @@ function pot_footer_helpers(): void {
 		$remaining = max( 0, $threshold - $subtotal );
 		$progress  = min( 100, ( $subtotal / $threshold ) * 100 );
 		?>
-		<section id="pot-shipping-progress" class="pot-shipping-progress" data-target="<?php echo esc_attr( (string) $threshold ); ?>">
+		<section id="pot-shipping-progress" class="pot-shipping-progress" data-target="<?php echo esc_attr( (string) $threshold ); ?>" aria-live="polite" aria-atomic="true">
 			<p><?php echo $remaining > 0 ? wp_kses_post( sprintf( __( 'Add %s more to reach the configured free-shipping threshold.', 'purple-optimize-toolkit' ), wc_price( $remaining ) ) ) : esc_html__( 'You reached the configured free-shipping threshold.', 'purple-optimize-toolkit' ); ?></p>
 			<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( (string) round( $progress ) ); ?>"><span style="width:<?php echo esc_attr( (string) $progress ); ?>%"></span></div>
 		</section>
@@ -1433,7 +1476,8 @@ function pot_footer_helpers(): void {
 			?>
 		<aside class="pot-sticky-cart" aria-hidden="true" data-product-type="<?php echo esc_attr( $product->get_type() ); ?>">
 			<div><?php echo $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy' ) ); ?><span><strong><?php echo esc_html( $product->get_name() ); ?></strong><span><?php echo wp_kses_post( $product->get_price_html() ); ?></span></span></div>
-			<button type="button"><?php echo esc_html( $product->is_type( 'simple' ) ? $product->single_add_to_cart_text() : __( 'Choose options', 'purple-optimize-toolkit' ) ); ?></button>
+			<button type="button"><span class="pot-sticky-cart-label"><?php echo esc_html( $product->is_type( 'simple' ) ? $product->single_add_to_cart_text() : __( 'Choose options', 'purple-optimize-toolkit' ) ); ?></span></button>
+			<span class="pot-sticky-cart-status screen-reader-text" role="status" aria-live="polite" aria-atomic="true"></span>
 		</aside>
 		<?php
 		}
