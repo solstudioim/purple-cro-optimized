@@ -4,7 +4,7 @@ Purple CRO Optimized is a conversion-focused WooCommerce implementation built
 on Woo's Purple block theme. It applies common ecommerce CRO patterns and
 implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
-**Current child-theme release:** `0.5.11`
+**Current child-theme release:** `0.5.12`
 
 **Current toolkit release:** `0.7.4`
 
@@ -13,8 +13,20 @@ The project is deliberately split into two packages:
 - `wp-content/themes/purple-optimize`: a child theme for presentation and layout.
 - `wp-content/plugins/purple-optimize-toolkit`: optional store functionality.
 
-The canonical Purple source used for local development is vendored at
+The child theme is built on the
+[Woo Purple parent theme](https://github.com/woocommerce/woo-themes/tree/trunk/purple),
+created by Automattic and distributed under GPLv2 or later. The canonical
+upstream source used for local development is vendored at
 `wp-content/themes/purple` from `woocommerce/woo-themes` (`trunk/purple`).
+
+## WordPress.org submission preparation
+
+The directory-ready child-theme package is limited to
+`wp-content/themes/purple-optimize`; the optional toolkit plugin is never bundled
+inside the theme ZIP. See
+[`docs/wordpress-org-theme-submission.md`](docs/wordpress-org-theme-submission.md)
+for the packaging command, review checklist, upstream attribution, and the two
+items that require confirmation from the Themes Team before submission.
 
 ## Included conversion features
 

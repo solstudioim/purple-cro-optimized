@@ -25,6 +25,22 @@ test('README displays the current toolkit release', () => {
 	assert.ok(readme.includes(`**Current toolkit release:** \`${version}\``));
 });
 
+test('child theme carries WordPress.org release metadata and upstream attribution', () => {
+	const stylesheet = read('style.css');
+	const themeReadmePath = path.join(theme, 'readme.txt');
+	assert.ok(fs.existsSync(themeReadmePath), 'WordPress.org requires a theme readme.txt');
+	const themeReadme = fs.readFileSync(themeReadmePath, 'utf8');
+	const projectReadme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+	const version = stylesheet.match(/^Version:\s*(\S+)/m)?.[1];
+	assert.match(stylesheet, /^Theme URI:\s*https:\/\/github\.com\/solstudioim\/purple-cro-optimized$/m);
+	assert.match(stylesheet, /^Requires at least:\s*7\.0$/m);
+	assert.match(stylesheet, /^Tested up to:\s*7\.0$/m);
+	assert.match(themeReadme, new RegExp(`^Stable tag:\\s*${version?.replaceAll('.', '\\.')}$`, 'm'));
+	assert.match(themeReadme, /https:\/\/github\.com\/woocommerce\/woo-themes\/tree\/trunk\/purple/);
+	assert.match(themeReadme, /Purple WordPress Theme, \(C\) 2026 Automattic/);
+	assert.match(projectReadme, /\[Woo Purple parent theme\]\(https:\/\/github\.com\/woocommerce\/woo-themes\/tree\/trunk\/purple\)/);
+});
+
 test('README identifies the toolkit admin menu and access requirements', () => {
 	const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 	assert.match(readme, /WooCommerce →\s+Purple Optimize/);
