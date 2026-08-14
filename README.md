@@ -4,7 +4,9 @@ Purple CRO Optimized is a conversion-focused WooCommerce implementation built
 on Woo's Purple block theme. It applies common ecommerce CRO patterns and
 implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
-**Current child-theme release:** `0.5.10`
+**Current child-theme release:** `0.5.11`
+
+**Current toolkit release:** `0.7.4`
 
 The project is deliberately split into two packages:
 

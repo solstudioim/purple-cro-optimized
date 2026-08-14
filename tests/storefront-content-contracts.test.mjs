@@ -8,6 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const theme = path.join(root, 'wp-content/themes/purple-optimize');
 const read = (relativePath) => fs.readFileSync(path.join(theme, relativePath), 'utf8');
 const toolkitJs = fs.readFileSync(path.join(root, 'wp-content/plugins/purple-optimize-toolkit/assets/toolkit.js'), 'utf8');
+const toolkitPhp = fs.readFileSync(path.join(root, 'wp-content/plugins/purple-optimize-toolkit/purple-optimize-toolkit.php'), 'utf8');
 
 test('README displays the current child theme release', () => {
 	const stylesheet = read('style.css');
@@ -15,6 +16,13 @@ test('README displays the current child theme release', () => {
 	const version = stylesheet.match(/^Version:\s*(\S+)/m)?.[1];
 	assert.ok(version, 'Theme stylesheet must declare a version');
 	assert.ok(readme.includes(`**Current child-theme release:** \`${version}\``));
+});
+
+test('README displays the current toolkit release', () => {
+	const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+	const version = toolkitPhp.match(/^ \* Version:\s*(\S+)/m)?.[1];
+	assert.ok(version, 'Toolkit plugin must declare a version');
+	assert.ok(readme.includes(`**Current toolkit release:** \`${version}\``));
 });
 
 test('README identifies the toolkit admin menu and access requirements', () => {

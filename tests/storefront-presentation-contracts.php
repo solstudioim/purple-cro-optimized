@@ -63,4 +63,16 @@ pot_test_expect( 'Popular' === pot_presentation_popularity_label( true, ' Popula
 pot_test_expect( pot_presentation_policy_summary_is_safe( '30-day returns; return shipping applies.', array( 'return shipping' ) ), 'Material limitations must remain visible in policy summaries.' );
 pot_test_expect( ! pot_presentation_policy_summary_is_safe( 'Easy 30-day returns.', array( 'return shipping' ) ), 'Policy summaries must not omit material limitations.' );
 
+$has_offer_issue_policy = function_exists( 'pot_presentation_offer_product_issue' );
+pot_test_expect( $has_offer_issue_policy, 'Offer settings must expose why a selected product cannot be used.' );
+if ( $has_offer_issue_policy ) {
+	pot_test_expect( 'missing' === pot_presentation_offer_product_issue( false, '', '', false, false, false ), 'A deleted selected product must be reported as missing.' );
+	pot_test_expect( 'not_simple' === pot_presentation_offer_product_issue( true, 'variable', 'publish', true, true, true ), 'A non-simple selected product must be rejected.' );
+	pot_test_expect( 'not_published' === pot_presentation_offer_product_issue( true, 'simple', 'draft', true, true, true ), 'An unpublished selected product must be rejected.' );
+	pot_test_expect( 'not_visible' === pot_presentation_offer_product_issue( true, 'simple', 'publish', false, true, true ), 'A hidden selected product must be reported.' );
+	pot_test_expect( 'not_purchasable' === pot_presentation_offer_product_issue( true, 'simple', 'publish', true, false, true ), 'An unpurchasable selected product must be reported.' );
+	pot_test_expect( 'out_of_stock' === pot_presentation_offer_product_issue( true, 'simple', 'publish', true, true, false ), 'An out-of-stock selected product must be reported.' );
+	pot_test_expect( '' === pot_presentation_offer_product_issue( true, 'simple', 'publish', true, true, true ), 'An eligible selected product must not show a warning.' );
+}
+
 fwrite( STDOUT, "Storefront presentation contracts passed.\n" );

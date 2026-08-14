@@ -5,7 +5,7 @@ Author: Local WooCommerce experiment
 Description: A conversion-focused child theme for Woo's Purple block theme.
 Requires at least: 6.7
 Requires PHP: 7.4
-Version: 0.5.10
+Version: 0.5.11
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Template: purple
@@ -179,7 +179,23 @@ body.pot-enclosed-checkout .pot-secure-checkout { margin-right: 8.5rem !importan
 .wp-block-woocommerce-product-filter-checkbox-list { border: 1px solid var(--pot-border); border-radius: var(--pot-radius); padding: 1rem; background: var(--pot-surface); }
 
 /* Product */
-.pot-product-page { padding: clamp(2rem, 5vw, 4.5rem) 1rem 0; }
+body.single-product main.pot-product-page {
+	box-sizing: border-box;
+	width: min(calc(100% - 2rem), 1120px) !important;
+	max-width: 1120px !important;
+	margin-inline: auto !important;
+	padding: clamp(2rem, 5vw, 4.5rem) 0 0;
+}
+.pot-product-page > .pot-product-decision {
+	width: 100% !important;
+	max-width: 100% !important;
+	margin-inline: 0 !important;
+}
+.pot-product-page > .wp-block-woocommerce-store-notices {
+	width: 100% !important;
+	max-width: 100% !important;
+	margin-inline: 0 !important;
+}
 .pot-product-decision {
 	align-items: flex-start !important;
 	gap: clamp(2rem, 6vw, 6rem);

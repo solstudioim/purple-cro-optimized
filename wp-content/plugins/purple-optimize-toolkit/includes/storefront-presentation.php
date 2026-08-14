@@ -189,3 +189,37 @@ function pot_presentation_policy_summary_is_safe( string $summary, array $materi
 
 	return true;
 }
+
+/**
+ * Explain why a configured offer product is not eligible.
+ *
+ * @param bool   $exists      Whether the selected product still exists.
+ * @param string $type        WooCommerce product type.
+ * @param string $status      WordPress post status.
+ * @param bool   $visible     Whether the product is catalog visible.
+ * @param bool   $purchasable Whether WooCommerce considers it purchasable.
+ * @param bool   $in_stock    Whether the product is in stock.
+ * @return string Stable issue code, or an empty string when eligible.
+ */
+function pot_presentation_offer_product_issue( bool $exists, string $type, string $status, bool $visible, bool $purchasable, bool $in_stock ): string {
+	if ( ! $exists ) {
+		return 'missing';
+	}
+	if ( 'simple' !== $type ) {
+		return 'not_simple';
+	}
+	if ( 'publish' !== $status ) {
+		return 'not_published';
+	}
+	if ( ! $visible ) {
+		return 'not_visible';
+	}
+	if ( ! $purchasable ) {
+		return 'not_purchasable';
+	}
+	if ( ! $in_stock ) {
+		return 'out_of_stock';
+	}
+
+	return '';
+}

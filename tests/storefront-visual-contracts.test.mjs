@@ -36,6 +36,21 @@ test('major journey surfaces have explicit visual boundaries', () => {
 	}
 });
 
+test('single product decision content uses one restrained centered container', () => {
+	const productPage = declarations(themeCss, 'body.single-product main.pot-product-page');
+	assert.match(productPage, /width:\s*min\(calc\(100% - 2rem\),\s*1120px\)\s*!important/);
+	assert.match(productPage, /max-width:\s*1120px\s*!important/);
+	assert.match(productPage, /margin-inline:\s*auto\s*!important/);
+	const decision = declarations(themeCss, '.pot-product-page > .pot-product-decision');
+	assert.match(decision, /width:\s*100%\s*!important/);
+	assert.match(decision, /max-width:\s*100%\s*!important/);
+	assert.match(decision, /margin-inline:\s*0\s*!important/);
+	const notices = declarations(themeCss, '.pot-product-page > .wp-block-woocommerce-store-notices');
+	assert.match(notices, /width:\s*100%/);
+	assert.match(notices, /max-width:\s*100%/);
+	assert.match(notices, /margin-inline:\s*0\s*!important/);
+});
+
 test('purchase actions use one strong color without decorative movement', () => {
 	const actions = declarations(themeCss, '.single_add_to_cart_button,\n.wp-block-woocommerce-product-button .wp-block-button__link,\n.wc-block-cart__submit-button,\n.wc-block-components-checkout-place-order-button');
 	assert.match(actions, /background:\s*var\(--pot-action\)/);

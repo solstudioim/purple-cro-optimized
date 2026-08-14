@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.7.3
+ * Version: 0.7.4
  * Requires at least: 6.7
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.7.3' );
+define( 'POT_VERSION', '0.7.4' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -208,25 +208,93 @@ function pot_checkbox_row( string $key, string $label, array $settings ): void {
 }
 
 /**
+ * Return the static eligibility issue for a WooCommerce offer product.
+ *
+ * @param WC_Product|false $product Selected product, or false when missing.
+ * @return string Stable issue code, or an empty string when eligible.
+ */
+function pot_offer_product_issue_for_product( $product ): string {
+	return pot_presentation_offer_product_issue(
+		(bool) $product,
+		$product ? $product->get_type() : '',
+		$product ? $product->get_status() : '',
+		$product ? $product->is_visible() : false,
+		$product ? $product->is_purchasable() : false,
+		$product ? $product->is_in_stock() : false
+	);
+}
+
+/**
+ * Return an actionable admin message for an offer-product issue.
+ *
+ * @param string $issue Stable issue code.
+ * @return string Localized message, or an empty string when eligible.
+ */
+function pot_offer_product_issue_message( string $issue ): string {
+	switch ( $issue ) {
+		case 'not_selected':
+			return __( 'Select a published, in-stock simple product before enabling offers.', 'purple-optimize-toolkit' );
+		case 'missing':
+			return __( 'The selected product no longer exists. Select a different product.', 'purple-optimize-toolkit' );
+		case 'not_simple':
+			return __( 'The selected product is not a simple product. Select a different simple product.', 'purple-optimize-toolkit' );
+		case 'not_published':
+			return __( 'The selected product is not published. Publish it or select a different product.', 'purple-optimize-toolkit' );
+		case 'not_visible':
+			return __( 'The selected product is hidden from the catalog. Make it visible or select a different product.', 'purple-optimize-toolkit' );
+		case 'not_purchasable':
+			return __( 'The selected product cannot currently be purchased. Update it or select a different product.', 'purple-optimize-toolkit' );
+		case 'out_of_stock':
+			return __( 'The selected product is out of stock. Restock it or select a different product.', 'purple-optimize-toolkit' );
+		default:
+			return '';
+	}
+}
+
+/**
+ * Return the issue for one configured product ID.
+ *
+ * @param int  $product_id Selected product ID.
+ * @param bool $required   Whether an empty selection is invalid.
+ * @return string Stable issue code, or an empty string when eligible.
+ */
+function pot_offer_product_issue( int $product_id, bool $required = false ): string {
+	if ( 0 === $product_id ) {
+		return $required ? 'not_selected' : '';
+	}
+
+	return pot_offer_product_issue_for_product( wc_get_product( $product_id ) );
+}
+
+/**
  * Output a searchable simple-product setting.
  *
  * @param string $key      Setting key.
  * @param string $label    Field label.
  * @param array  $settings Current settings.
+ * @param bool   $required Whether the offer requires a selection.
  */
-function pot_product_select_row( string $key, string $label, array $settings ): void {
+function pot_product_select_row( string $key, string $label, array $settings, bool $required = false ): void {
 	$product_id = absint( $settings[ $key ] ?? 0 );
 	$product    = $product_id ? wc_get_product( $product_id ) : false;
+	$issue      = pot_offer_product_issue( $product_id, $required );
+	$warning_id = 'pot-' . $key . '-warning';
+	$help_id    = 'pot-' . $key . '-help';
 	?>
 	<tr>
 		<th scope="row"><label for="pot-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
 		<td>
-			<select class="wc-product-search" id="pot-<?php echo esc_attr( $key ); ?>" name="pot_settings[<?php echo esc_attr( $key ); ?>]" style="width: 400px;" data-placeholder="<?php esc_attr_e( 'Search for a simple product…', 'purple-optimize-toolkit' ); ?>" data-action="woocommerce_json_search_products" data-allow_clear="true">
+			<select class="wc-product-search" id="pot-<?php echo esc_attr( $key ); ?>" name="pot_settings[<?php echo esc_attr( $key ); ?>]" style="width: 400px;" data-placeholder="<?php esc_attr_e( 'Search for a simple product…', 'purple-optimize-toolkit' ); ?>" data-action="woocommerce_json_search_products" data-allow_clear="true" aria-describedby="<?php echo esc_attr( $help_id . ( $issue ? ' ' . $warning_id : '' ) ); ?>">
 				<?php if ( $product ) : ?>
 				<option value="<?php echo esc_attr( (string) $product_id ); ?>" selected><?php echo esc_html( wp_strip_all_tags( $product->get_formatted_name() ) ); ?></option>
+				<?php elseif ( $product_id ) : ?>
+				<option value="<?php echo esc_attr( (string) $product_id ); ?>" selected><?php echo esc_html( sprintf( __( 'Product #%d (missing)', 'purple-optimize-toolkit' ), $product_id ) ); ?></option>
 				<?php endif; ?>
 			</select>
-			<p class="description"><?php esc_html_e( 'Only a published, purchasable, in-stock simple product can be offered.', 'purple-optimize-toolkit' ); ?></p>
+			<p class="description" id="<?php echo esc_attr( $help_id ); ?>"><?php esc_html_e( 'Only a published, visible, purchasable, in-stock simple product can be offered.', 'purple-optimize-toolkit' ); ?></p>
+			<?php if ( $issue ) : ?>
+				<p class="notice notice-error inline pot-offer-product-warning" id="<?php echo esc_attr( $warning_id ); ?>"><strong><?php esc_html_e( 'Offer unavailable:', 'purple-optimize-toolkit' ); ?></strong> <?php echo esc_html( pot_offer_product_issue_message( $issue ) ); ?></p>
+			<?php endif; ?>
 		</td>
 	</tr>
 	<?php
@@ -240,10 +308,17 @@ function pot_render_settings_page(): void {
 		return;
 	}
 	$settings = pot_settings();
+	$upsell_issue  = pot_offer_product_issue( absint( $settings['upsell_product_id'] ?? 0 ), true );
+	$downsell_id   = absint( $settings['downsell_product_id'] ?? 0 );
+	$downsell_issue = pot_offer_product_issue( $downsell_id );
+	$offers_need_attention = ! empty( $settings['offer_funnel'] ) && ( '' !== $upsell_issue || '' !== $downsell_issue );
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Purple Optimize', 'purple-optimize-toolkit' ); ?></h1>
 		<p><?php esc_html_e( 'Conversion helpers use real catalog, stock, sale, and cart data. No fake urgency or recent-purchase claims are generated.', 'purple-optimize-toolkit' ); ?></p>
+		<?php if ( $offers_need_attention ) : ?>
+			<div class="notice notice-error inline"><p><strong><?php esc_html_e( 'Offer setup needs attention.', 'purple-optimize-toolkit' ); ?></strong> <?php esc_html_e( 'Review the highlighted product selection below so the funnel can display.', 'purple-optimize-toolkit' ); ?></p></div>
+		<?php endif; ?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'pot_settings_group' ); ?>
 			<table class="form-table" role="presentation">
@@ -279,7 +354,7 @@ function pot_render_settings_page(): void {
 						<p class="description"><?php esc_html_e( 'After-purchase acceptance starts a separate checkout and order; it never silently changes or recharges the completed order.', 'purple-optimize-toolkit' ); ?></p>
 					</td>
 				</tr>
-				<?php pot_product_select_row( 'upsell_product_id', __( 'Upsell product', 'purple-optimize-toolkit' ), $settings ); ?>
+				<?php pot_product_select_row( 'upsell_product_id', __( 'Upsell product', 'purple-optimize-toolkit' ), $settings, true ); ?>
 				<tr><th scope="row"><label for="pot-upsell-discount"><?php esc_html_e( 'Upsell discount', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="100" id="pot-upsell-discount" name="pot_settings[upsell_discount]" value="<?php echo esc_attr( (string) $settings['upsell_discount'] ); ?>">%</td></tr>
 				<tr><th scope="row"><label for="pot-upsell-countdown"><?php esc_html_e( 'Upsell countdown', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="1440" id="pot-upsell-countdown" name="pot_settings[upsell_countdown]" value="<?php echo esc_attr( (string) $settings['upsell_countdown'] ); ?>"> <?php esc_html_e( 'minutes', 'purple-optimize-toolkit' ); ?><p class="description"><?php esc_html_e( 'Set to 0 to disable. Refreshing does not restart the timer.', 'purple-optimize-toolkit' ); ?></p></td></tr>
 				<?php pot_product_select_row( 'downsell_product_id', __( 'Downsell product', 'purple-optimize-toolkit' ), $settings ); ?>
@@ -903,7 +978,7 @@ add_filter( 'pre_get_document_title', 'pot_offer_document_title' );
 function pot_offer_product( string $step, array $settings ): ?WC_Product {
 	$product_id = absint( $settings[ $step . '_product_id' ] ?? 0 );
 	$product    = $product_id ? wc_get_product( $product_id ) : false;
-	if ( ! $product || ! $product->is_type( 'simple' ) || ! $product->is_visible() || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+	if ( pot_offer_product_issue_for_product( $product ) ) {
 		return null;
 	}
 	if ( WC()->cart ) {
