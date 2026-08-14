@@ -6,7 +6,7 @@ implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
 **Current child-theme release:** `0.5.12`
 
-**Current toolkit release:** `0.7.4`
+**Current toolkit release:** `0.7.5`
 
 **Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 

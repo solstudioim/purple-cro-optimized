@@ -121,6 +121,14 @@ test('mobile sticky cart announces and animates successful additions', () => {
 	assert.match(toolkitJs, /prefers-reduced-motion: reduce/);
 });
 
+test('single product uses the inline cart link without a duplicate success banner', () => {
+	assert.match(toolkitJs, /function removeDuplicateProductSuccessNotices\(\)/);
+	assert.match(toolkitJs, /\.wc-block-components-notice-banner\.is-success/);
+	assert.match(toolkitJs, /querySelector\('\.wc-forward'\)/);
+	assert.match(toolkitJs, /notice\.remove\(\)/);
+	assert.match(toolkitJs, /removeDuplicateProductSuccessNotices\(\);/);
+});
+
 test('footer navigation groups contain distinct theme-owned links', () => {
 	const footer = read('parts/footer.html');
 	const links = [

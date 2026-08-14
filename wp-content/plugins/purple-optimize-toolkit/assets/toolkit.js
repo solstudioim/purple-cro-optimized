@@ -234,16 +234,26 @@
 	function setupSingleProductViewCart() {
 		if (!document.body.classList.contains('single-product') || !config.cartUrl) return;
 
+		function removeDuplicateProductSuccessNotices() {
+			document.querySelectorAll('.wp-block-woocommerce-store-notices .wc-block-components-notice-banner.is-success').forEach((notice) => {
+				if (notice.querySelector('.wc-forward')) notice.remove();
+			});
+		}
+
 		const reveal = () => {
 			const addButton = document.querySelector('.single_add_to_cart_button') || document.querySelector('.wp-block-woocommerce-product-button button');
 			if (!addButton) return;
 			const container = addButton.closest('form.cart, .wp-block-woocommerce-product-button, .wp-block-woocommerce-add-to-cart-with-options') || addButton.parentElement;
-			if (!container || container.querySelector('.pot-view-cart-link')) return;
-			const link = document.createElement('a');
-			link.className = 'pot-view-cart-link';
-			link.href = config.cartUrl;
-			link.textContent = config.viewCart || 'View cart';
-			container.append(link);
+			if (!container) return;
+			if (!container.querySelector('.pot-view-cart-link')) {
+				const link = document.createElement('a');
+				link.className = 'pot-view-cart-link';
+				link.href = config.cartUrl;
+				link.textContent = config.viewCart || 'View cart';
+				container.append(link);
+			}
+			removeDuplicateProductSuccessNotices();
+			window.requestAnimationFrame(removeDuplicateProductSuccessNotices);
 		};
 
 		document.body.addEventListener('wc-blocks_added_to_cart', reveal);
