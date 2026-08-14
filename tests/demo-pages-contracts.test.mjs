@@ -26,3 +26,30 @@ test('demo page has a narrow responsive layout', () => {
   assert.match(css, /@media\s*\(max-width:\s*720px\)/);
   assert.match(css, /video\s*\{[^}]*width:\s*100%/s);
 });
+
+test('demo media build inputs and Pages assets exist', () => {
+  const buildScript = path.join(root, 'tools/demo/build-video.sh');
+  const captions = path.join(root, 'tools/demo/captions.txt');
+
+  assert.ok(fs.existsSync(buildScript), 'expected reproducible video build script');
+  assert.ok(fs.existsSync(captions), 'expected storyboard captions');
+
+  const captionText = fs.readFileSync(captions, 'utf8');
+  for (const requiredCaption of [
+    'Pre-checkout upsell',
+    'Downsell',
+    'Native WooCommerce checkout',
+    'Post-purchase offer',
+  ]) {
+    assert.match(captionText, new RegExp(requiredCaption));
+  }
+
+  assert.ok(
+    fs.existsSync(path.join(root, 'docs/demo/assets/purple-cro-demo.mp4')),
+    'expected Pages MP4 asset',
+  );
+  assert.ok(
+    fs.existsSync(path.join(root, 'docs/demo/assets/purple-cro-demo-poster.webp')),
+    'expected Pages poster asset',
+  );
+});

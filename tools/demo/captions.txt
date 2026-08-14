@@ -1,0 +1,18 @@
+01-opening.png|Purple CRO Optimized — conversion-focused WooCommerce child theme.
+02-home-trust.png|Clear discovery, trust, and product hierarchy.
+03-catalog.png|Fast product-led catalog navigation.
+04-product.png|One focused purchase surface on every screen.
+05-mobile-sticky.png|Mobile sticky cart keeps the next step in reach.
+06-cart-success.png|Immediate, accessible cart confirmation.
+07-cart.png|Cart summary keeps checkout intent clear.
+08-upsell.png|Pre-checkout upsell — relevant, optional, and easy to decline.
+09-downsell.png|Downsell appears only after the upsell is rejected.
+10-downsell-accepted.png|Downsell accepted — cart updates before checkout.
+11-checkout-contact.png|Native WooCommerce checkout — contact and delivery stay enclosed.
+12-checkout-payment.png|Test payment with a clear order action.
+13-order-confirmed.png|Completed order confirmed before any follow-up offer.
+14-post-purchase.png|Post-purchase offer — an explicit, separate next step.
+15-post-purchase-detail.png|Acceptance starts a separate checkout; the completed order is unchanged.
+16-toolkit-valid.png|Toolkit validation confirms eligible offer products.
+17-toolkit-warning.png|Warnings flag invalid products before they break the funnel.
+18-end-card-source.png|Built on Woo Purple. Open source under GPL.
