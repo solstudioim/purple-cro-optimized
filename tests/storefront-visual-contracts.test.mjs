@@ -104,10 +104,10 @@ test('desktop cart and checkout cards have a deliberate gutter', () => {
 });
 
 test('commerce banners and transactional layout share one container width', () => {
-	const surfaces = declarations(themeCss, `.pot-cart-layout .pot-shipping-progress,
-.pot-cart-layout .pot-checkout-trust,
-.pot-checkout-layout .pot-shipping-progress,
-.pot-checkout-layout .pot-checkout-trust`);
+	const surfaces = declarations(themeCss, `.woocommerce-cart .pot-shipping-progress,
+.woocommerce-cart .pot-checkout-trust,
+.woocommerce-checkout .pot-shipping-progress,
+.woocommerce-checkout .pot-checkout-trust`);
 	assert.match(surfaces, /width:\s*100%/);
 	assert.match(surfaces, /max-width:\s*none/);
 	assert.match(surfaces, /margin-inline:\s*0/);

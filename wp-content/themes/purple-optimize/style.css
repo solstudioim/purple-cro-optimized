@@ -5,7 +5,7 @@ Author: Local WooCommerce experiment
 Description: A conversion-focused child theme for Woo's Purple block theme.
 Requires at least: 6.7
 Requires PHP: 7.4
-Version: 0.5.7
+Version: 0.5.8
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Template: purple
@@ -224,10 +224,10 @@ body.pot-enclosed-checkout .pot-secure-checkout { margin-right: 8.5rem !importan
 /* Cart and checkout */
 .pot-cart-layout,
 .pot-checkout-layout { padding: clamp(2.5rem, 6vw, 5rem) 1rem clamp(4rem, 8vw, 7rem); }
-.pot-cart-layout .pot-shipping-progress,
-.pot-cart-layout .pot-checkout-trust,
-.pot-checkout-layout .pot-shipping-progress,
-.pot-checkout-layout .pot-checkout-trust {
+.woocommerce-cart .pot-shipping-progress,
+.woocommerce-cart .pot-checkout-trust,
+.woocommerce-checkout .pot-shipping-progress,
+.woocommerce-checkout .pot-checkout-trust {
 	width: 100%;
 	max-width: none;
 	margin-inline: 0;
