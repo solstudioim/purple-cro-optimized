@@ -19,6 +19,9 @@ created by Automattic and distributed under GPLv2 or later. The canonical
 upstream source used for local development is vendored at
 `wp-content/themes/purple` from `woocommerce/woo-themes` (`trunk/purple`).
 
+Purple is maintained in WooCommerce's public `woocommerce/woo-themes`
+repository. It is not sourced from a WordPress.com repository.
+
 ## WordPress.org submission preparation
 
 The directory-ready child-theme package is limited to

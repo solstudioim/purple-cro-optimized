@@ -39,8 +39,8 @@ git archive --format=zip \
 
 ## Confirm with the Themes Team before upload
 
-1. Purple is currently distributed through Woo's public repository and
-   WordPress.com rather than the WordPress.org theme directory. Confirm whether
+1. Purple is maintained in WooCommerce's public `woocommerce/woo-themes`
+   repository. It is not sourced from a WordPress.com repository. Confirm whether
    the parent must be accepted into the directory first so dependency
    installation and review can work correctly.
 2. Reviewer guidance says child-theme names should not contain the parent-theme
