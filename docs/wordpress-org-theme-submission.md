@@ -40,9 +40,9 @@ git archive --format=zip \
 ## Confirm with the Themes Team before upload
 
 1. Purple is maintained in WooCommerce's public `woocommerce/woo-themes`
-   repository. It is not sourced from a WordPress.com repository. Confirm whether
-   the parent must be accepted into the directory first so dependency
-   installation and review can work correctly.
+   repository. Confirm whether the parent must be accepted into the WordPress.org
+   Theme Directory first so dependency installation and review can work
+   correctly.
 2. Reviewer guidance says child-theme names should not contain the parent-theme
    name. Confirm whether `Purple Optimize` is acceptable or select a distinct
    public name and slug before the first submission.
