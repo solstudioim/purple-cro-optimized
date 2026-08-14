@@ -4,6 +4,7 @@ Thumbs.db
 *.zip
 .idea/
 .vscode/
+.worktrees/
 node_modules/
 vendor/
 wp-config.php
