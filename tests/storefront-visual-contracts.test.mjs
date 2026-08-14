@@ -104,8 +104,8 @@ test('desktop cart and checkout cards have a deliberate gutter', () => {
 });
 
 test('desktop cart and checkout keep content left and order summary right', () => {
-	assert.match(themeCss, /@media \(min-width:\s*782px\)[\s\S]*\.woocommerce-cart \.wc-block-cart__main,[\s\S]*\.woocommerce-checkout \.wc-block-checkout__main\s*\{[^}]*grid-column:\s*1/);
-	assert.match(themeCss, /@media \(min-width:\s*782px\)[\s\S]*\.woocommerce-cart \.wc-block-cart__sidebar,[\s\S]*\.woocommerce-checkout \.wc-block-checkout__sidebar\s*\{[^}]*grid-column:\s*2/);
+	assert.match(themeCss, /@media \(min-width:\s*782px\)[\s\S]*\.woocommerce-cart \.wc-block-cart__main,[\s\S]*\.woocommerce-checkout \.wc-block-checkout__main\s*\{[^}]*grid-column:\s*1[^}]*grid-row:\s*1/);
+	assert.match(themeCss, /@media \(min-width:\s*782px\)[\s\S]*\.woocommerce-cart \.wc-block-cart__sidebar,[\s\S]*\.woocommerce-checkout \.wc-block-checkout__sidebar\s*\{[^}]*grid-column:\s*2[^}]*grid-row:\s*1/);
 });
 
 test('commerce banners and transactional layout share one container width', () => {

@@ -5,7 +5,7 @@ Author: Local WooCommerce experiment
 Description: A conversion-focused child theme for Woo's Purple block theme.
 Requires at least: 6.7
 Requires PHP: 7.4
-Version: 0.5.9
+Version: 0.5.10
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Template: purple
@@ -270,9 +270,15 @@ body.pot-enclosed-checkout header.wp-block-template-part .wp-block-site-title { 
 	.woocommerce-checkout .wc-block-checkout__main,
 	.woocommerce-checkout .wc-block-checkout__sidebar { width: auto !important; }
 	.woocommerce-cart .wc-block-cart__main,
-	.woocommerce-checkout .wc-block-checkout__main { grid-column: 1; }
+	.woocommerce-checkout .wc-block-checkout__main {
+		grid-column: 1;
+		grid-row: 1;
+	}
 	.woocommerce-cart .wc-block-cart__sidebar,
-	.woocommerce-checkout .wc-block-checkout__sidebar { grid-column: 2; }
+	.woocommerce-checkout .wc-block-checkout__sidebar {
+		grid-column: 2;
+		grid-row: 1;
+	}
 }
 
 @media (max-width: 900px) {
