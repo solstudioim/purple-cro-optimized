@@ -20,3 +20,10 @@
 - [x] `18-end-card-source.png` — clean repository/source end card input
 
 Safety audit: no credentials, real names, personal email or street addresses, order IDs, browser notifications, unrelated tabs, or live-site interaction.
+
+## Review corrections
+
+- [x] `13-order-confirmed.png` contains only the genuine rendered WooCommerce order-received page; no replacement storefront copy or redaction was injected.
+- [x] `11-checkout-contact.png` and `12-checkout-payment.png` visibly identify the temporarily relabeled gateway as local demo/test payment with no external processing.
+- [x] `16-toolkit-valid.png` visibly shows valid upsell ID 13 and downsell ID 15 together.
+- [x] Gateway settings, valid offer IDs, pre-checkout placement, and the isolated cart were restored and read back after capture.
