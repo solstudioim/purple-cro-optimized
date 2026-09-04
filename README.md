@@ -6,7 +6,7 @@ implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
 **Current child-theme release:** `0.5.12`
 
-**Current toolkit release:** `0.7.5`
+**Current toolkit release:** `0.8.0`
 
 **Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 
@@ -106,6 +106,33 @@ it is missing, confirm that both WooCommerce and Purple Optimize Toolkit are
 active.
 
 Use `[purple_optimize_wishlist]` on a page to render the browser wishlist.
+
+### Checkout add-ons and helpful content
+
+In **WooCommerce → Purple Optimize**, scroll to **Checkout add-ons and helpful
+content**. This section has its own **Save checkout features** button.
+
+- Enable up to four independent add-ons above the native **Place order** button.
+  Search for simple products and optionally replace each headline/description.
+  Images and current prices (including real catalog sales) come from the products;
+  use the product editor to change images or prices. Nothing is preselected.
+- Shoppers can add or remove an extra by checkbox or button. WooCommerce updates
+  the order summary and totals without reloading or clearing entered details.
+  Repeated acceptance does not increase quantity; products already in the cart
+  cannot be duplicated or removed through the add-on control.
+- Enable the helpful-content panel to display rich text and images below the
+  order summary. Use the visual editor and **Add Media** for headings, lists,
+  policy links, and images. Include only claims that accurately describe the store.
+- Both features default to off and are independent of the existing offer funnel.
+  These additions target the **WooCommerce Checkout block**, not the legacy
+  `[woocommerce_checkout]` shortcode. The panel stacks with the summary on mobile.
+
+Verification: `node --test tests/*.test.mjs` and
+`wp eval-file tests/checkout-extras-integration.php` on a local `.test` install.
+For browser checks, run the integration script with `prepare`, run
+`tests/checkout-extras.e2e.mjs` with `POT_WP_PATH` and `PLAYWRIGHT_MODULE` set, then
+run the integration script with `cleanup` to remove test products and restore
+the previous settings. No payment or order is submitted by these checks.
 
 For a populated development store, run:
 

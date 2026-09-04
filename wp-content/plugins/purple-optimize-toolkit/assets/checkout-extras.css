@@ -1,0 +1,113 @@
+.pot-checkout-upsells {
+	margin-block: 24px;
+}
+.pot-checkout-upsells h3 {
+	font-size: 1.25rem;
+	margin-block: 0 8px;
+}
+.pot-checkout-upsells-intro {
+	font-size: .875rem;
+	margin-block: 0 20px;
+}
+.pot-checkout-upsell {
+	border: 1px solid var(--wp--preset--color--primary, #5c317c);
+	border-radius: 8px;
+	background: #faf7fc;
+	padding: 20px;
+	margin-block: 16px 24px;
+}
+.pot-checkout-upsell.is-selected {
+	box-shadow: inset 0 0 0 1px currentColor;
+}
+.pot-checkout-upsell-heading,
+.pot-checkout-upsell-heading label {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+}
+.pot-checkout-upsell-heading {
+	justify-content: space-between;
+	font-size: .9375rem;
+}
+.pot-checkout-upsell-heading input {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	margin-block-start: 2px;
+}
+.pot-checkout-upsell-price {
+	text-align: end;
+	flex-shrink: 0;
+}
+.pot-checkout-upsell-price del {
+	display: block;
+	font-size: .8em;
+}
+.pot-checkout-upsell-details {
+	display: flex;
+	gap: 16px;
+	margin-block: 16px;
+	font-size: .875rem;
+}
+.pot-checkout-upsell-details p {
+	margin: 0;
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+}
+.pot-checkout-upsell-image {
+	flex: 0 0 84px;
+}
+.pot-checkout-upsell-image img {
+	width: 84px;
+	height: 84px;
+	object-fit: contain;
+	border-radius: 4px;
+}
+.pot-checkout-upsell button {
+	display: block;
+	margin-inline: auto;
+	min-height: 44px;
+	padding: 10px 18px;
+	border: 0;
+	border-radius: 4px;
+	background: #8e370c;
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+.pot-checkout-upsell button:disabled {
+	opacity: .65;
+	cursor: default;
+}
+.pot-checkout-upsell :focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
+}
+.pot-checkout-extra-error {
+	color: #a00;
+}
+.pot-checkout-extra-status:empty {
+	margin: 0;
+}
+.pot-checkout-content {
+	padding: 24px;
+	margin-block-start: 24px;
+	border: 1px solid #ded8e5;
+	border-radius: 8px;
+	overflow-wrap: anywhere;
+	font-size: .9375rem;
+}
+.pot-checkout-content img {
+	max-width: 100%;
+	height: auto;
+}
+.pot-checkout-content > :first-child { margin-block-start: 0; }
+.pot-checkout-content > :last-child { margin-block-end: 0; }
+@media (max-width: 480px) {
+	.pot-checkout-upsell, .pot-checkout-content { padding: 16px; }
+	.pot-checkout-upsell-heading { flex-wrap: wrap; }
+	.pot-checkout-upsell-price { text-align: start; }
+	.pot-checkout-upsell-image { flex-basis: 64px; }
+	.pot-checkout-upsell-image img { width: 64px; height: 64px; }
+}

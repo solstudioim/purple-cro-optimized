@@ -1,0 +1,13 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "purple-optimize/checkout-content",
+	"title": "Helpful checkout content",
+	"category": "woocommerce",
+	"parent": ["woocommerce/checkout-totals-block"],
+	"supports": {"inserter": false, "html": false, "multiple": false},
+	"textdomain": "purple-optimize-toolkit",
+	"viewScript": "pot-checkout-extras",
+	"style": "pot-checkout-extras",
+	"render": "file:./render.php"
+}
