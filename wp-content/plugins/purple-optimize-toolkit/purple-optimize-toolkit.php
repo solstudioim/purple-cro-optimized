@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.8.0
+ * Version: 0.8.1
  * Requires at least: 6.7
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.8.0' );
+define( 'POT_VERSION', '0.8.1' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -129,6 +129,43 @@ function pot_register_settings(): void {
 add_action( 'admin_init', 'pot_register_settings' );
 
 /**
+ * Match Settings API access to the capability used by this settings screen.
+ *
+ * @since 0.8.1
+ * @return string Required capability.
+ */
+function pot_settings_capability(): string {
+	return 'manage_woocommerce';
+}
+add_filter( 'option_page_capability_pot_settings_group', 'pot_settings_capability' );
+
+/**
+ * Save only the offer-funnel switch, leaving product and placement choices intact.
+ *
+ * @since 0.8.1
+ * @return void
+ */
+function pot_ajax_set_offer_enabled(): void {
+	if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		wp_send_json_error( array( 'message' => __( 'You cannot change these settings.', 'purple-optimize-toolkit' ) ), 403 );
+	}
+	check_ajax_referer( 'pot_set_offer_enabled', 'nonce' );
+	$enabled = isset( $_POST['enabled'] ) ? wp_unslash( $_POST['enabled'] ) : null;
+	if ( ! in_array( $enabled, array( '0', '1' ), true ) ) {
+		wp_send_json_error( array( 'message' => __( 'Choose enabled or disabled.', 'purple-optimize-toolkit' ) ), 400 );
+	}
+	$settings = pot_settings();
+	$settings['offer_funnel'] = (int) $enabled;
+	update_option( 'pot_settings', $settings );
+	$saved = ! empty( pot_settings()['offer_funnel'] );
+	if ( $saved !== ( '1' === $enabled ) ) {
+		wp_send_json_error( array( 'message' => __( 'The setting could not be saved. Please try again.', 'purple-optimize-toolkit' ) ), 500 );
+	}
+	wp_send_json_success( array( 'enabled' => $saved ) );
+}
+add_action( 'wp_ajax_pot_set_offer_enabled', 'pot_ajax_set_offer_enabled' );
+
+/**
  * Sanitize settings submitted through the Settings API.
  *
  * @param mixed $input Raw settings.
@@ -189,6 +226,15 @@ function pot_admin_assets( string $hook_suffix ): void {
 	}
 	wp_enqueue_style( 'woocommerce_admin_styles' );
 	wp_enqueue_script( 'wc-enhanced-select' );
+	wp_enqueue_script( 'pot-admin-offer-toggle', POT_URL . 'assets/admin-offer-toggle.js', array(), POT_VERSION, true );
+	wp_localize_script( 'pot-admin-offer-toggle', 'potOfferToggle', array(
+		'url'      => admin_url( 'admin-ajax.php' ),
+		'nonce'    => wp_create_nonce( 'pot_set_offer_enabled' ),
+		'saving'   => __( 'Saving…', 'purple-optimize-toolkit' ),
+		'enabled'  => __( 'Enabled — saved.', 'purple-optimize-toolkit' ),
+		'disabled' => __( 'Disabled — saved.', 'purple-optimize-toolkit' ),
+		'error'    => __( 'Could not save. Please try again or use Save Changes.', 'purple-optimize-toolkit' ),
+	) );
 }
 add_action( 'admin_enqueue_scripts', 'pot_admin_assets' );
 
@@ -336,7 +382,6 @@ function pot_render_settings_page(): void {
 				pot_checkbox_row( 'sale_percentage', __( 'Percentage sale badge', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'recent_sales', __( 'Recent-purchase social proof', 'purple-optimize-toolkit' ), $settings );
 				pot_checkbox_row( 'social_proof_show_names', __( 'Show customer first names', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'offer_funnel', __( 'Upsell and downsell offers', 'purple-optimize-toolkit' ), $settings );
 				?>
 				<tr><th scope="row"><label for="pot-promo-text"><?php esc_html_e( 'Promotion text', 'purple-optimize-toolkit' ); ?></label></th><td><input class="regular-text" id="pot-promo-text" name="pot_settings[promo_text]" value="<?php echo esc_attr( (string) $settings['promo_text'] ); ?>"></td></tr>
 				<tr><th scope="row"><label for="pot-promo-code"><?php esc_html_e( 'Coupon code', 'purple-optimize-toolkit' ); ?></label></th><td><input id="pot-promo-code" name="pot_settings[promo_code]" value="<?php echo esc_attr( (string) $settings['promo_code'] ); ?>"><p class="description"><?php esc_html_e( 'Optional. Visitors can copy it from the promotion strip.', 'purple-optimize-toolkit' ); ?></p></td></tr>
@@ -344,6 +389,15 @@ function pot_render_settings_page(): void {
 				<tr><th scope="row"><label for="pot-shipping"><?php esc_html_e( 'Free-shipping threshold', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" step="0.01" id="pot-shipping" name="pot_settings[free_shipping_threshold]" value="<?php echo esc_attr( (string) $settings['free_shipping_threshold'] ); ?>"><p class="description"><?php esc_html_e( 'Set to 0 to hide progress. Match this to an actual shipping method.', 'purple-optimize-toolkit' ); ?></p></td></tr>
 				<tr><th scope="row"><label for="pot-social-proof-days"><?php esc_html_e( 'Recent-purchase window', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="1" max="365" id="pot-social-proof-days" name="pot_settings[social_proof_days]" value="<?php echo esc_attr( (string) $settings['social_proof_days'] ); ?>"> <?php esc_html_e( 'days', 'purple-optimize-toolkit' ); ?><p class="description"><?php esc_html_e( 'Uses completed and processing orders only. Keep first names disabled unless your privacy policy and consent basis allow them.', 'purple-optimize-toolkit' ); ?></p></td></tr>
 				<tr><th colspan="2"><h2><?php esc_html_e( 'Upsell and downsell offers', 'purple-optimize-toolkit' ); ?></h2><p class="description"><?php esc_html_e( 'Choose one placement. Rejecting the upsell shows the optional downsell; accepting either product hides further offers for that checkout.', 'purple-optimize-toolkit' ); ?></p></th></tr>
+				<tr>
+					<th scope="row"><label for="pot-offer-enabled"><?php esc_html_e( 'Enable upsell / downsell', 'purple-optimize-toolkit' ); ?></label></th>
+					<td>
+						<label><input type="checkbox" id="pot-offer-enabled" name="pot_settings[offer_funnel]" value="1" <?php checked( ! empty( $settings['offer_funnel'] ) ); ?> aria-describedby="pot-offer-toggle-help pot-offer-toggle-status"> <?php esc_html_e( 'Show upsell and downsell offers', 'purple-optimize-toolkit' ); ?></label>
+						<p class="description" id="pot-offer-toggle-help"><?php esc_html_e( 'Saves immediately when switched on or off. Applies to all offer placements; your products, discounts, and checkout add-ons stay unchanged.', 'purple-optimize-toolkit' ); ?></p>
+						<p id="pot-offer-toggle-status" role="status" aria-live="polite"><?php echo esc_html( ! empty( $settings['offer_funnel'] ) ? __( 'Enabled', 'purple-optimize-toolkit' ) : __( 'Disabled', 'purple-optimize-toolkit' ) ); ?></p>
+						<noscript><p><?php esc_html_e( 'JavaScript is unavailable. Use Save Changes below to save this checkbox.', 'purple-optimize-toolkit' ); ?></p></noscript>
+					</td>
+				</tr>
 				<tr>
 					<th scope="row"><label for="pot-offer-placement"><?php esc_html_e( 'Offer placement', 'purple-optimize-toolkit' ); ?></label></th>
 					<td>

@@ -51,3 +51,21 @@ adjust those two paths when running elsewhere.
 
 The cart integration follows WooCommerce's
 [Store API cart-update extension flow](https://developer.woocommerce.com/docs/apis/store-api/extending-store-api/extend-store-api-update-cart/).
+
+## 0.8.1 — one-click funnel switch
+
+Verified 2026-09-04 with `tests/offer-toggle.e2e.mjs` on the same local site:
+
+- Enable/disable saves immediately and survives reloading the settings page.
+- Other toolkit settings and separate checkout add-ons remain unchanged.
+- Disabled funnels bypass the offer redirect, including bookmarked offer URLs;
+  re-enabling restores the pre-checkout offer redirect.
+- Unauthenticated requests and invalid nonces are rejected. Failed saves restore
+  the checkbox and display an error; retry succeeds.
+- Original site settings were restored (enabled, post-purchase placement), and
+  the temporary admin session was revoked. No products or orders were created.
+
+Run `tests/offer-toggle.e2e.mjs` with the same `POT_WP_PATH` and
+`PLAYWRIGHT_MODULE` variables. This runner temporarily changes funnel settings,
+uses two existing eligible simple products, and restores the original settings
+in its cleanup step. Run only on a local development store.

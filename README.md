@@ -6,7 +6,7 @@ implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
 **Current child-theme release:** `0.5.12`
 
-**Current toolkit release:** `0.8.0`
+**Current toolkit release:** `0.8.1`
 
 **Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 
@@ -106,6 +106,16 @@ it is missing, confirm that both WooCommerce and Purple Optimize Toolkit are
 active.
 
 Use `[purple_optimize_wishlist]` on a page to render the browser wishlist.
+
+### One-click upsell/downsell switch
+
+Under **WooCommerce → Purple Optimize → Upsell and downsell offers**, use
+**Enable upsell / downsell**. Checking or unchecking saves immediately, with a
+visible saved confirmation. It controls all three funnel placements without
+clearing product, discount, countdown, or placement settings and does not change
+the separate checkout add-ons. Other settings still use **Save Changes**.
+If saving fails, the switch returns to its last saved state and displays an error.
+Without JavaScript, the checkbox can still be saved with **Save Changes**.
 
 ### Checkout add-ons and helpful content
 
