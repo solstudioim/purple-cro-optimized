@@ -35,7 +35,7 @@ function pot_sanitize_checkout_settings( $input ): array {
 	$output = array(
 		'upsells_enabled' => empty( $input['upsells_enabled'] ) ? 0 : 1,
 		'content_enabled' => empty( $input['content_enabled'] ) ? 0 : 1,
-		'content'         => wp_kses_post( is_string( $input['content'] ?? null ) ? $input['content'] : '' ),
+		'content'         => wp_kses_post( is_string( $input['content'] ?? null ) ? $input['content'] : pot_checkout_settings()['content'] ),
 		'upsells'         => array(),
 	);
 	$seen = array();
@@ -108,8 +108,12 @@ function pot_render_checkout_settings(): void {
 			</td></tr>
 			<?php endfor; ?>
 			<tr><th scope="row"><?php esc_html_e( 'Helpful checkout content', 'purple-optimize-toolkit' ); ?></th><td><label><input type="checkbox" name="pot_checkout_settings[content_enabled]" value="1" <?php checked( $settings['content_enabled'] ); ?>> <?php esc_html_e( 'Show text and images below the order summary', 'purple-optimize-toolkit' ); ?></label>
-			<p class="description"><?php esc_html_e( 'Add headings, lists, links, and images from the Media Library. Use only accurate delivery, returns, support, and security claims. Scripts and embedded forms are not allowed.', 'purple-optimize-toolkit' ); ?></p>
-			<?php wp_editor( $settings['content'], 'pot_checkout_content', array( 'textarea_name' => 'pot_checkout_settings[content]', 'textarea_rows' => 12, 'media_buttons' => true ) ); ?>
+			<p class="description"><?php esc_html_e( 'Use the WordPress block editor for headings, images, lists, columns, and buttons. Save your settings here before opening the editor; publish or save content changes in the editor.', 'purple-optimize-toolkit' ); ?></p>
+			<p><a class="button" id="pot-edit-checkout-content" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pot_edit_checkout_content' ), 'pot_edit_checkout_content' ) ); ?>"><?php esc_html_e( 'Open block editor', 'purple-optimize-toolkit' ); ?></a></p>
+			<?php if ( trim( pot_checkout_content_source() ) && ! has_blocks( pot_checkout_content_source() ) ) : ?>
+			<p class="description"><?php esc_html_e( 'Existing rich text is preserved in a Classic block. Select Convert to blocks to make each part editable.', 'purple-optimize-toolkit' ); ?></p>
+			<?php endif; ?>
+			<p class="description"><?php esc_html_e( 'Only published content appears at checkout. Use accurate claims; scripts, forms, and embedded checkout blocks are not supported.', 'purple-optimize-toolkit' ); ?></p>
 			</td></tr>
 		</table>
 		<?php submit_button( __( 'Save checkout features', 'purple-optimize-toolkit' ) ); ?>
@@ -144,7 +148,7 @@ function pot_checkout_cart_data(): array {
 		return $result;
 	}
 	if ( $settings['content_enabled'] ) {
-		$result['content'] = wp_kses_post( wpautop( $settings['content'] ) );
+		$result['content'] = pot_checkout_content_html();
 	}
 	if ( ! $settings['upsells_enabled'] ) {
 		return $result;
@@ -257,6 +261,7 @@ function pot_register_checkout_blocks(): void {
 	wp_register_script( 'pot-checkout-extras', POT_URL . 'assets/checkout-extras.js', array( 'wc-blocks-checkout', 'wc-blocks-data-store', 'wp-element', 'wp-data', 'wp-i18n' ), (string) filemtime( POT_PATH . 'assets/checkout-extras.js' ), true );
 	wp_set_script_translations( 'pot-checkout-extras', 'purple-optimize-toolkit' );
 	wp_register_style( 'pot-checkout-extras', POT_URL . 'assets/checkout-extras.css', array(), (string) filemtime( POT_PATH . 'assets/checkout-extras.css' ) );
+	wp_register_style( 'pot-checkout-content', POT_URL . 'assets/checkout-content.css', array(), (string) filemtime( POT_PATH . 'assets/checkout-content.css' ) );
 	foreach ( array( 'checkout-upsells', 'checkout-content' ) as $name ) {
 		register_block_type( POT_PATH . 'blocks/' . $name );
 	}
@@ -282,7 +287,7 @@ function pot_insert_checkout_extras( string $html, array $block ): string {
 	if ( 'woocommerce/checkout-actions-block' === $block['blockName'] && $settings['upsells_enabled'] ) {
 		return render_block( array( 'blockName' => 'purple-optimize/checkout-upsells', 'attrs' => array(), 'innerBlocks' => array(), 'innerHTML' => '', 'innerContent' => array() ) ) . $html;
 	}
-	if ( 'woocommerce/checkout-order-summary-block' === $block['blockName'] && $settings['content_enabled'] && trim( $settings['content'] ) ) {
+	if ( 'woocommerce/checkout-order-summary-block' === $block['blockName'] && $settings['content_enabled'] && trim( pot_checkout_content_source() ) ) {
 		return $html . render_block( array( 'blockName' => 'purple-optimize/checkout-content', 'attrs' => array(), 'innerBlocks' => array(), 'innerHTML' => '', 'innerContent' => array() ) );
 	}
 	return $html;

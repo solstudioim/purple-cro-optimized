@@ -33,8 +33,8 @@ test('checkout changes use the Store API without posting the checkout form', () 
 test('checkout configuration remains independent and safely editable', () => {
 	assert.match(php, /settings_fields\( 'pot_checkout_settings_group' \)/);
 	assert.match(php, /current_user_can\( 'manage_woocommerce' \)/);
-	assert.match(php, /wp_editor\(/);
-	assert.match(php, /'media_buttons' => true/);
+	assert.match(php, /Open block editor/);
+	assert.doesNotMatch(php, /wp_editor\(/);
 	assert.match(php, /wp_kses_post/);
 	assert.match(php, /'display_context' => 'cart'/);
 	assert.doesNotMatch(php, /set_price\(|update_post_meta\(|wp_insert_post\(/);

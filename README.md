@@ -6,7 +6,7 @@ implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
 **Current child-theme release:** `0.5.12`
 
-**Current toolkit release:** `0.8.1`
+**Current toolkit release:** `0.9.0`
 
 **Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 
@@ -130,9 +130,16 @@ content**. This section has its own **Save checkout features** button.
   the order summary and totals without reloading or clearing entered details.
   Repeated acceptance does not increase quantity; products already in the cart
   cannot be duplicated or removed through the add-on control.
-- Enable the helpful-content panel to display rich text and images below the
-  order summary. Use the visual editor and **Add Media** for headings, lists,
-  policy links, and images. Include only claims that accurately describe the store.
+- Enable the helpful-content panel below the order summary, save these settings,
+  then select **Open block editor**. This opens WordPress's native editor with
+  headings, paragraphs, images/Media Library, lists, groups, columns, and buttons.
+  Publish or save the document there; revisions and autosaves use WordPress core.
+  Existing rich text is copied once into a Classic block: select **Convert to
+  blocks** to edit its individual parts. The original settings copy is retained.
+  Only the published document appears; draft, private, password-protected, and
+  trashed documents remain hidden. Disabling the panel does not delete content.
+  Scripts, forms, shortcodes, remote embeds, data bindings, and nested checkout
+  blocks are excluded. Include only claims that accurately describe the store.
 - Both features default to off and are independent of the existing offer funnel.
   These additions target the **WooCommerce Checkout block**, not the legacy
   `[woocommerce_checkout]` shortcode. The panel stacks with the summary on mobile.
@@ -143,6 +150,11 @@ For browser checks, run the integration script with `prepare`, run
 `tests/checkout-extras.e2e.mjs` with `POT_WP_PATH` and `PLAYWRIGHT_MODULE` set, then
 run the integration script with `cleanup` to remove test products and restore
 the previous settings. No payment or order is submitted by these checks.
+
+Native-editor checks: run `wp eval-file tests/checkout-content-integration.php`
+and `node tests/checkout-content.e2e.mjs` with the same local environment variables.
+They restore their temporary document and settings automatically. The browser test
+covers core blocks, image rendering, shared typography/layout, save/reload, and mobile.
 
 For a populated development store, run:
 

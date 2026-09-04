@@ -94,16 +94,12 @@ try {
 		await admin.goto(`${site}/wp-admin/admin.php?page=purple-optimize`, { waitUntil: 'domcontentloaded' });
 		const form = admin.locator('#pot-checkout-settings');
 		await form.waitFor();
-		await form.getByRole('button', { name: 'Add Media' }).click();
-		await admin.locator('.media-modal').waitFor();
-		await admin.locator('.media-modal-close').click();
+		assert.equal(await form.getByRole('link', { name: 'Open block editor' }).count(), 1);
 		await form.locator('#pot-checkout-title-0').fill('A helpful optional extra');
-		await form.locator('#pot_checkout_content-html').click();
-		await form.locator('#pot_checkout_content').fill('<h3>Shop with confidence</h3><p>Read our delivery and returns information.</p>');
 		await Promise.all([admin.waitForURL('**/admin.php?page=purple-optimize&settings-updated=true', { waitUntil: 'domcontentloaded' }), form.getByRole('button', { name: 'Save checkout features' }).click()]);
 		assert.equal(await admin.locator('#pot-checkout-title-0').inputValue(), 'A helpful optional extra');
 		await page.reload({ waitUntil: 'domcontentloaded' });
-		await page.locator('.pot-checkout-content').getByRole('heading', { name: 'Shop with confidence' }).waitFor();
+		await page.locator('.pot-checkout-content').getByRole('heading', { name: 'Helpful checkout information' }).waitFor();
 		assert.equal(await page.locator('.pot-checkout-upsell strong').first().innerText(), 'A helpful optional extra');
 		// Each feature can be disabled without changing the earlier funnel settings.
 		await admin.locator('[name="pot_checkout_settings[upsells_enabled]"]').uncheck();
@@ -118,7 +114,7 @@ try {
 		await adminContext.close();
 	}
 	assert.deepEqual(errors, [], 'Frontend must have no uncaught JS errors.');
-	console.log('PASS: four offers, live prices/totals, add/remove, retained email, reload persistence, text/image panel, placement, nonce rejection, failure recovery, mobile overflow, one Place order button, admin save/read-back, Media Library, disabled state.');
+	console.log('PASS: four offers, live prices/totals, add/remove, retained email, reload persistence, text/image panel, placement, nonce rejection, failure recovery, mobile overflow, one Place order button, admin save/read-back, block editor link, disabled state.');
 	console.log(`Screenshots: ${artifacts}`);
 } catch (error) {
 	await page.screenshot({ path: `${artifacts}failure.png`, fullPage: true });

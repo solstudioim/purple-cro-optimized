@@ -29,6 +29,11 @@ function pot_checkout_cleanup_fixture(): void {
 	} else {
 		update_option( 'pot_checkout_settings', $fixture['settings'] );
 	}
+	if ( false === ( $fixture['content_id'] ?? false ) ) {
+		delete_option( 'pot_checkout_content_id' );
+	} else {
+		update_option( 'pot_checkout_content_id', $fixture['content_id'] );
+	}
 	delete_option( 'pot_checkout_test_fixture' );
 }
 
@@ -39,8 +44,9 @@ if ( 'cleanup' === $mode ) {
 	return;
 }
 pot_checkout_expect( ! get_option( 'pot_checkout_test_fixture' ), 'Existing fixtures require cleanup before a new run.' );
-$fixture = array( 'settings' => get_option( 'pot_checkout_settings', false ), 'products' => array() );
+$fixture = array( 'settings' => get_option( 'pot_checkout_settings', false ), 'content_id' => get_option( 'pot_checkout_content_id', false ), 'products' => array() );
 update_option( 'pot_checkout_test_fixture', $fixture );
+delete_option( 'pot_checkout_content_id' );
 $prepared = false;
 
 try {
