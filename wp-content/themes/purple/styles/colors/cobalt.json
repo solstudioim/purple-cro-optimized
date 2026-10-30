@@ -4,54 +4,48 @@
 			"palette": [
 				{
 					"color": "#FFFFFF",
-					"name": "Color 1",
+					"name": "Base",
 					"slug": "theme-1"
 				},
 				{
 					"color": "#111111",
-					"name": "Color 2",
+					"name": "Contrast",
 					"slug": "theme-2"
 				},
 				{
-					"color": "#37125f",
-					"name": "Color 3",
+					"color": "#243DC8",
+					"name": "Primary",
 					"slug": "theme-3"
 				},
 				{
-					"color": "#322f37",
-					"name": "Color 4",
+					"color": "#686868",
+					"name": "Contrast Alt",
 					"slug": "theme-4"
 				},
 				{
-					"color": "#f7f3fc",
-					"name": "Color 5",
+					"color": "#F7F7F7",
+					"name": "Base Alt",
 					"slug": "theme-5"
 				},
 				{
 					"color": "rgba(17, 17, 17, 0.2)",
-					"name": "Color 6",
+					"name": "Border",
 					"slug": "theme-6"
 				},
 				{
-					"color": "#8918e5",
-					"name": "Color 7",
+					"color": "#DC352F",
+					"name": "Accent",
 					"slug": "theme-7"
 				}
 			],
 			"duotone": [
 				{
-					"colors": [
-						"#111111",
-						"#FFFFFF"
-					],
+					"colors": [ "#111111", "#FFFFFF" ],
 					"name": "Duotone 1",
 					"slug": "duotone-1"
 				},
 				{
-					"colors": [
-						"#111111",
-						"#f7f3fc"
-					],
+					"colors": [ "#111111", "#F7F7F7" ],
 					"name": "Duotone 2",
 					"slug": "duotone-2"
 				}
@@ -59,5 +53,5 @@
 		}
 	},
 	"version": 3,
-	"title": "Petunia"
+	"title": "Cobalt"
 }

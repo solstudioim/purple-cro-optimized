@@ -14,6 +14,7 @@
 		pending = true;
 		checkbox.setAttribute('aria-disabled', 'true');
 		status.textContent = potOfferToggle.saving;
+		let failureMessage = potOfferToggle.error;
 		try {
 			const response = await fetch(potOfferToggle.url, {
 				method: 'POST',
@@ -21,13 +22,16 @@
 				body: new URLSearchParams({ action: 'pot_set_offer_enabled', nonce: potOfferToggle.nonce, enabled: checkbox.checked ? '1' : '0' }),
 			});
 			const result = await response.json();
-			if (!response.ok || !result.success || typeof result.data?.enabled !== 'boolean') throw new Error('Save failed');
+			if (!response.ok || !result.success || typeof result.data?.enabled !== 'boolean') {
+				failureMessage = result.data?.message || potOfferToggle.error;
+				throw new Error('Save failed');
+			}
 			saved = result.data.enabled;
 			checkbox.checked = saved;
 			status.textContent = saved ? potOfferToggle.enabled : potOfferToggle.disabled;
 		} catch (error) {
 			checkbox.checked = saved;
-			status.textContent = potOfferToggle.error;
+			status.textContent = failureMessage;
 		} finally {
 			pending = false;
 			checkbox.removeAttribute('aria-disabled');

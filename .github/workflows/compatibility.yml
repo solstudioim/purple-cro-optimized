@@ -1,0 +1,94 @@
+name: Theme and companion compatibility
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+      - run: node --test tests/*.test.mjs
+      - run: php tests/storefront-presentation-contracts.php
+      - run: find wp-content/themes/purple wp-content/themes/purple-optimize wp-content/plugins/purple-optimize-toolkit -name '*.php' -print0 | xargs -0 -n1 php -l
+      - run: git diff --check
+      - run: python3 tools/build-packages.py --output "$RUNNER_TEMP/packages"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installable-packages
+          path: ${{ runner.temp }}/packages/
+  wordpress:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.4', '8.3']
+        woo: ['11.1.0', 'latest']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: wordpress
+          MYSQL_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -pwordpress"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: wp-cli
+      - name: Install isolated WordPress and combined packages
+        env:
+          WOO_VERSION: ${{ matrix.woo }}
+        run: |
+          wp core download --path="$RUNNER_TEMP/site" --version=7.1
+          wp config create --path="$RUNNER_TEMP/site" --dbname=wordpress --dbuser=root --dbpass=wordpress --dbhost=127.0.0.1
+          wp core install --path="$RUNNER_TEMP/site" --url=http://localhost:8888 --title=Compatibility --admin_user=compat --admin_password=local-test-only --admin_email=compat@example.test --skip-email
+          cp -R wp-content/themes/purple wp-content/themes/purple-optimize "$RUNNER_TEMP/site/wp-content/themes/"
+          cp -R wp-content/plugins/purple-optimize-toolkit "$RUNNER_TEMP/site/wp-content/plugins/"
+          if [ "$WOO_VERSION" = latest ]; then wp plugin install woocommerce --activate --path="$RUNNER_TEMP/site"; else wp plugin install woocommerce --version="$WOO_VERSION" --activate --path="$RUNNER_TEMP/site"; fi
+          wp theme activate purple-optimize --path="$RUNNER_TEMP/site"
+          wp plugin activate purple-optimize-toolkit --path="$RUNNER_TEMP/site"
+          wp eval-file tests/companion-settings-integration.php --path="$RUNNER_TEMP/site"
+          wp eval-file tests/checkout-extras-integration.php --path="$RUNNER_TEMP/site"
+          wp eval-file tests/checkout-content-integration.php --path="$RUNNER_TEMP/site"
+          wp wc hpos sync --path="$RUNNER_TEMP/site"
+          wp option update woocommerce_custom_orders_table_enabled yes --path="$RUNNER_TEMP/site"
+          wp eval-file tests/companion-settings-integration.php --path="$RUNNER_TEMP/site"
+      - name: Browser checks on the minimum supported WooCommerce
+        if: matrix.php == '8.3' && matrix.woo == '11.1.0'
+        env:
+          POT_WP_PATH: ${{ runner.temp }}/site
+          POT_ARTIFACTS: ${{ runner.temp }}/browser-evidence
+          POT_TEST_PASSWORD: local-test-only
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.62.1
+          node "$RUNNER_TEMP/browser/node_modules/playwright/cli.js" install --with-deps chromium
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/browser/node_modules/playwright/index.mjs"
+          wp eval-file tools/seed-demo.php --path="$POT_WP_PATH"
+          wp rewrite structure '/%postname%/' --path="$POT_WP_PATH"
+          PHP_CLI_SERVER_WORKERS=4 wp server --host=127.0.0.1 --port=8888 --path="$POT_WP_PATH" > "$RUNNER_TEMP/browser-server.log" 2>&1 &
+          for attempt in $(seq 1 30); do if curl --fail --silent http://localhost:8888/wp-login.php > /dev/null; then break; fi; sleep 1; done
+          node tests/companion-settings.e2e.mjs
+          python3 tools/build-packages.py --output "$RUNNER_TEMP/packages"
+          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.10.0.zip"
+          export POT_DISPOSABLE_SITE=1
+          node tests/companion-setup.e2e.mjs
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.php == '8.3' && matrix.woo == '11.1.0'
+        with:
+          name: browser-evidence
+          path: |
+            ${{ runner.temp }}/browser-evidence/
+            ${{ runner.temp }}/browser-server.log

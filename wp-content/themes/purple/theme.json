@@ -22,54 +22,48 @@
 			"palette": [
 				{
 					"color": "#FFFFFF",
-					"name": "Color 1",
+					"name": "Base",
 					"slug": "theme-1"
 				},
 				{
 					"color": "#111111",
-					"name": "Color 2",
+					"name": "Contrast",
 					"slug": "theme-2"
 				},
 				{
-					"color": "#243DC8",
-					"name": "Color 3",
+					"color": "#1f0342",
+					"name": "Primary",
 					"slug": "theme-3"
 				},
 				{
-					"color": "#686868",
-					"name": "Color 4",
+					"color": "#322f37",
+					"name": "Contrast Alt",
 					"slug": "theme-4"
 				},
 				{
-					"color": "#F7F7F7",
-					"name": "Color 5",
+					"color": "#f2edff",
+					"name": "Base Alt",
 					"slug": "theme-5"
 				},
 				{
 					"color": "rgba(17, 17, 17, 0.2)",
-					"name": "Color 6",
+					"name": "Border",
 					"slug": "theme-6"
 				},
 				{
-					"color": "#DC352F",
-					"name": "Color 7",
+					"color": "#720eec",
+					"name": "Accent",
 					"slug": "theme-7"
 				}
 			],
 			"duotone": [
 				{
-					"colors": [
-						"#111111",
-						"#FFFFFF"
-					],
+					"colors": [ "#111111", "#FFFFFF" ],
 					"name": "Duotone 1",
 					"slug": "duotone-1"
 				},
 				{
-					"colors": [
-						"#111111",
-						"#F7F7F7"
-					],
+					"colors": [ "#111111", "#f2edff" ],
 					"name": "Duotone 2",
 					"slug": "duotone-2"
 				}
@@ -206,6 +200,7 @@
 		"useRootPaddingAwareAlignments": true
 	},
 	"styles": {
+		"css": ".wp-block-table td, .wp-block-table th { border-color: var(--wp--preset--color--theme-6); } .wp-block-table th { font-weight: 600; }",
 		"blocks": {
 			"core/accordion-heading": {
 				"color": {
@@ -263,6 +258,7 @@
 				}
 			},
 			"core/cover": {
+				"css": "--wp--custom--outline-button-color: currentColor;",
 				"elements": {
 					"heading": {
 						"color": {
@@ -319,6 +315,9 @@
 					}
 				}
 			},
+			"core/group": {
+				"css": "&.woocommerce.product { margin-block-start: 0; }"
+			},
 			"core/navigation": {
 				"color": {
 					"text": "var(--wp--preset--color--theme-2)"
@@ -327,19 +326,18 @@
 					"link": {
 						"color": {
 							"text": "var(--wp--preset--color--theme-2)"
-						},
-						":hover": {
-							"typography": {
-								"textDecoration": "underline"
-							}
-						},
-						"typography": {
-							"textDecoration": "none"
 						}
 					}
 				},
 				"spacing": {
 					"blockGap": "var(--wp--preset--spacing--30)"
+				}
+			},
+			"core/navigation-link": {
+				"-current": {
+					"typography": {
+						"textDecoration": "underline"
+					}
 				}
 			},
 			"core/post-comments-form": {
@@ -375,18 +373,6 @@
 					"fontSize": "var(--wp--preset--font-size--xx-large)",
 					"fontWeight": "500",
 					"lineHeight": "1.23"
-				},
-				"elements": {
-					"link": {
-						"typography": {
-							"textDecoration": "none"
-						},
-						":hover": {
-							"typography": {
-								"textDecoration": "underline"
-							}
-						}
-					}
 				}
 			},
 			"core/pullquote": {
@@ -399,7 +385,26 @@
 				"border": {
 					"color": "var(--wp--preset--color--theme-6)"
 				},
-				"css": "& .wp-block-search__input { padding-inline: 12px; }"
+				"elements": {
+					"button": {
+						"spacing": {
+							"padding": {
+								"bottom": "var:preset|spacing|10",
+								"left": "var:preset|spacing|10",
+								"right": "var:preset|spacing|10",
+								"top": "var:preset|spacing|10"
+							}
+						}
+					},
+					"textInput": {
+						"spacing": {
+							"padding": {
+								"left": "var:preset|spacing|10",
+								"right": "var:preset|spacing|10"
+							}
+						}
+					}
+				}
 			},
 			"core/separator": {
 				"border": {
@@ -448,6 +453,15 @@
 					"blockGap": "0"
 				}
 			},
+			"woocommerce/add-to-cart-with-options-quantity-selector": {
+				"color": {
+					"background": "#FFFFFF",
+					"text": "#111111"
+				},
+				"border": {
+					"radius": "0"
+				}
+			},
 			"woocommerce/add-to-cart-with-options-variation-selector-attribute-name": {
 				"color": {
 					"text": "var(--wp--preset--color--theme-4)"
@@ -478,6 +492,13 @@
 					"fontSize": "var(--wp--preset--font-size--medium)"
 				}
 			},
+			"woocommerce/product-filter-active": {
+				"spacing": {
+					"margin": {
+						"top": "var(--wp--preset--spacing--10)"
+					}
+				}
+			},
 			"woocommerce/product-filter-attribute": {
 				"color": {
 					"text": "var(--wp--preset--color--theme-2)"
@@ -498,6 +519,28 @@
 					"text": "var(--wp--preset--color--theme-2)"
 				}
 			},
+			"woocommerce/product-filter-chips": {
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--small)",
+					"letterSpacing": "0.06em",
+					"textTransform": "uppercase"
+				},
+				"border": {
+					"radius": "0"
+				},
+				"spacing": {
+					"padding": {
+						"bottom": "0.625rem",
+						"left": "1.25rem",
+						"right": "1.25rem",
+						"top": "0.625rem"
+					},
+					"blockGap": "var(--wp--preset--spacing--10)"
+				}
+			},
+			"woocommerce/product-filters": {
+				"css": "--wc-product-filter-block-spacing: 0;"
+			},
 			"woocommerce/product-gallery": {
 				"spacing": {
 					"blockGap": "var(--wp--preset--spacing--10)"
@@ -508,11 +551,6 @@
 					"text": "var(--wp--preset--color--theme-2)"
 				}
 			},
-			"woocommerce/product-price": {
-				"color": {
-					"text": "var(--wp--preset--color--theme-4)"
-				}
-			},
 			"woocommerce/product-results-count": {
 				"color": {
 					"text": "var(--wp--preset--color--theme-4)"
@@ -521,6 +559,29 @@
 			"woocommerce/catalog-sorting": {
 				"typography": {
 					"fontSize": "var(--wp--preset--font-size--medium)"
+				},
+				"elements": {
+					"select": {
+						"color": {
+							"background": "transparent",
+							"text": "var(--wp--preset--color--theme-2)"
+						},
+						"border": {
+							"color": "transparent",
+							"width": "0px",
+							"style": "solid"
+						},
+						"typography": {
+							"fontWeight": "300",
+							"fontFamily": "inherit"
+						},
+						"spacing": {
+							"padding": {
+								"left": "0",
+								"right": "var(--wp--preset--spacing--10)"
+							}
+						}
+					}
 				}
 			},
 			"woocommerce/product-rating": {
@@ -567,11 +628,6 @@
 					"style": "solid",
 					"width": "1px",
 					"color": "var(--wp--preset--color--theme-7)"
-				}
-			},
-			"woocommerce/product-summary": {
-				"color": {
-					"text": "var(--wp--preset--color--theme-4)"
 				}
 			},
 			"woocommerce/product-title": {
@@ -696,11 +752,16 @@
 				},
 				":hover": {
 					"typography": {
-						"textDecoration": "none"
+						"textDecoration": "underline"
 					}
 				},
 				"typography": {
-					"textDecoration": "underline"
+					"textDecoration": "none"
+				}
+			},
+			"textInput": {
+				"border": {
+					"color": "var(--wp--preset--color--theme-6)"
 				}
 			}
 		},
@@ -736,6 +797,16 @@
 			"title": "Header alternative"
 		},
 		{
+			"area": "navigation-overlay",
+			"name": "purple-navigation-overlay",
+			"title": "Purple navigation overlay"
+		},
+		{
+			"area": "navigation-overlay",
+			"name": "purple-navigation-overlay-alternative",
+			"title": "Purple navigation overlay alternative"
+		},
+		{
 			"area": "footer",
 			"name": "footer",
 			"title": "Footer default"
@@ -744,11 +815,6 @@
 			"area": "footer",
 			"name": "footer-alternative",
 			"title": "Footer alternative"
-		},
-		{
-			"area": "uncategorized",
-			"name": "mini-cart",
-			"title": "Mini Cart"
 		},
 		{
 			"area": "uncategorized",

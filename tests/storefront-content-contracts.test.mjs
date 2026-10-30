@@ -33,12 +33,12 @@ test('child theme carries WordPress.org release metadata and upstream attributio
 	const projectReadme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 	const version = stylesheet.match(/^Version:\s*(\S+)/m)?.[1];
 	assert.match(stylesheet, /^Theme URI:\s*https:\/\/github\.com\/solstudioim\/purple-cro-optimized$/m);
-	assert.match(stylesheet, /^Requires at least:\s*7\.0$/m);
-	assert.match(stylesheet, /^Tested up to:\s*7\.0$/m);
+	assert.match(stylesheet, /^Requires at least:\s*7\.1$/m);
+	assert.match(stylesheet, /^Tested up to:\s*7\.1$/m);
 	assert.match(themeReadme, new RegExp(`^Stable tag:\\s*${version?.replaceAll('.', '\\.')}$`, 'm'));
-	assert.match(themeReadme, /https:\/\/github\.com\/woocommerce\/woo-themes\/tree\/trunk\/purple/);
+	assert.match(themeReadme, /https:\/\/github\.com\/woocommerce\/woocommerce\/tree\/trunk\/themes\/purple/);
 	assert.match(themeReadme, /Purple WordPress Theme, \(C\) 2026 Automattic/);
-	assert.match(projectReadme, /\[Woo Purple parent theme\]\(https:\/\/github\.com\/woocommerce\/woo-themes\/tree\/trunk\/purple\)/);
+	assert.match(projectReadme, /\[Woo Purple parent theme\]\(https:\/\/github\.com\/woocommerce\/woocommerce\/tree\/trunk\/themes\/purple\)/);
 });
 
 test('README identifies the toolkit admin menu and access requirements', () => {
@@ -75,6 +75,11 @@ test('product story uses one native purchase surface and contextual anchors', ()
 	assert.equal((singleProduct.match(/woocommerce\/add-to-cart-with-options/g) || []).length, 1);
 	assert.match(productStory, /pot-return-to-buy-box/);
 	assert.doesNotMatch(productStory, /currently viewing|people viewing|best seller/i);
+});
+
+test('mini-cart opens after the native product form adds an item', () => {
+	const header = read('parts/header.html');
+	assert.match(header, /wp:woocommerce\/mini-cart \{"addToCartBehaviour":"open_drawer"\}/);
 });
 
 test('comparison content is neutral and maintainable', () => {
@@ -121,12 +126,15 @@ test('mobile sticky cart announces and animates successful additions', () => {
 	assert.match(toolkitJs, /prefers-reduced-motion: reduce/);
 });
 
-test('single product uses the inline cart link without a duplicate success banner', () => {
-	assert.match(toolkitJs, /function removeDuplicateProductSuccessNotices\(\)/);
+test('single product removes redundant inline cart actions when the mini-cart opens', () => {
+	assert.match(toolkitJs, /function setupSingleProductCartConfirmationCleanup\(\)/);
+	assert.match(toolkitJs, /function removeRedundantProductCartConfirmations\(\)/);
+	assert.match(toolkitJs, /\.wp-block-woocommerce-add-to-cart-with-options \.added_to_cart\.wc-forward/);
+	assert.match(toolkitJs, /\.pot-view-cart-link/);
 	assert.match(toolkitJs, /\.wc-block-components-notice-banner\.is-success/);
 	assert.match(toolkitJs, /querySelector\('\.wc-forward'\)/);
 	assert.match(toolkitJs, /notice\.remove\(\)/);
-	assert.match(toolkitJs, /removeDuplicateProductSuccessNotices\(\);/);
+	assert.doesNotMatch(toolkitJs, /container\.append\(link\)/);
 });
 
 test('footer navigation groups contain distinct theme-owned links', () => {

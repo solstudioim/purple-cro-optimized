@@ -2,11 +2,14 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.9.0
- * Requires at least: 6.7
+ * Version: 0.10.0
+ * Requires at least: 7.1
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
- * Author: Local WooCommerce experiment
+ * WC requires at least: 11.1
+ * Plugin URI: https://github.com/solstudioim/purple-cro-optimized
+ * Author: Sol Studio
+ * Author URI: https://github.com/solstudioim
  * License: GPL-2.0-or-later
  * Text Domain: purple-optimize-toolkit
  *
@@ -15,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.9.0' );
+define( 'POT_VERSION', '0.10.0' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -23,6 +26,17 @@ define( 'POT_URL', plugin_dir_url( __FILE__ ) );
 require_once POT_PATH . 'includes/storefront-presentation.php';
 require_once POT_PATH . 'includes/checkout-extras.php';
 require_once POT_PATH . 'includes/checkout-content.php';
+require_once POT_PATH . 'includes/admin-settings.php';
+
+/** Declare compatibility for WooCommerce storage and checkout features used by this plugin. */
+function pot_declare_woocommerce_compatibility(): void {
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', POT_FILE, true );
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', POT_FILE, true );
+	}
+}
+add_action( 'before_woocommerce_init', 'pot_declare_woocommerce_compatibility' );
+
 
 /**
  * Default plugin settings.
@@ -156,6 +170,11 @@ function pot_ajax_set_offer_enabled(): void {
 		wp_send_json_error( array( 'message' => __( 'Choose enabled or disabled.', 'purple-optimize-toolkit' ) ), 400 );
 	}
 	$settings = pot_settings();
+	if ( '1' === $enabled ) {
+		$issue = pot_offer_product_issue( absint( $settings['upsell_product_id'] ?? 0 ), true );
+		if ( '' === $issue ) { $issue = pot_offer_product_issue( absint( $settings['downsell_product_id'] ?? 0 ) ); }
+		if ( $issue ) { wp_send_json_error( array( 'message' => pot_offer_product_issue_message( $issue ) ), 400 ); }
+	}
 	$settings['offer_funnel'] = (int) $enabled;
 	update_option( 'pot_settings', $settings );
 	$saved = ! empty( pot_settings()['offer_funnel'] );
@@ -173,7 +192,7 @@ add_action( 'wp_ajax_pot_set_offer_enabled', 'pot_ajax_set_offer_enabled' );
  * @return array<string, mixed>
  */
 function pot_sanitize_settings( $input ): array {
-	$input    = is_array( $input ) ? $input : array();
+	$input    = pot_scope_settings_input( is_array( $input ) ? $input : array() );
 	$defaults = pot_defaults();
 	$output   = array();
 
@@ -206,7 +225,7 @@ function pot_sanitize_settings( $input ): array {
  */
 function pot_admin_menu(): void {
 	add_submenu_page(
-		'woocommerce',
+		class_exists( 'WooCommerce' ) ? 'woocommerce' : 'options-general.php',
 		__( 'Purple Optimize', 'purple-optimize-toolkit' ),
 		__( 'Purple Optimize', 'purple-optimize-toolkit' ),
 		'manage_woocommerce',
@@ -222,10 +241,12 @@ add_action( 'admin_menu', 'pot_admin_menu' );
  * @param string $hook_suffix Current admin page hook.
  */
 function pot_admin_assets( string $hook_suffix ): void {
-	if ( 'woocommerce_page_purple-optimize' !== $hook_suffix ) {
+	if ( ! in_array( $hook_suffix, array( 'woocommerce_page_purple-optimize', 'settings_page_purple-optimize' ), true ) ) {
 		return;
 	}
 	wp_enqueue_style( 'woocommerce_admin_styles' );
+	wp_enqueue_style( 'pot-admin-settings', POT_URL . 'assets/admin-settings.css', array(), POT_VERSION );
+	wp_enqueue_script( 'pot-admin-settings', POT_URL . 'assets/admin-settings.js', array( 'jquery', 'wc-enhanced-select' ), POT_VERSION, true );
 	wp_enqueue_script( 'wc-enhanced-select' );
 	wp_enqueue_script( 'pot-admin-offer-toggle', POT_URL . 'assets/admin-offer-toggle.js', array(), POT_VERSION, true );
 	wp_localize_script( 'pot-admin-offer-toggle', 'potOfferToggle', array(
@@ -249,8 +270,8 @@ add_action( 'admin_enqueue_scripts', 'pot_admin_assets' );
 function pot_checkbox_row( string $key, string $label, array $settings ): void {
 	?>
 	<tr>
-		<th scope="row"><?php echo esc_html( $label ); ?></th>
-		<td><label><input type="checkbox" name="pot_settings[<?php echo esc_attr( $key ); ?>]" value="1" <?php checked( ! empty( $settings[ $key ] ) ); ?>> <?php esc_html_e( 'Enabled', 'purple-optimize-toolkit' ); ?></label></td>
+		<th scope="row"><label for="pot-setting-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+		<td><label><input type="checkbox" id="pot-setting-<?php echo esc_attr( $key ); ?>" name="pot_settings[<?php echo esc_attr( $key ); ?>]" value="1" <?php checked( ! empty( $settings[ $key ] ) ); ?>> <?php esc_html_e( 'Enabled', 'purple-optimize-toolkit' ); ?></label></td>
 	</tr>
 	<?php
 }
@@ -352,79 +373,7 @@ function pot_product_select_row( string $key, string $label, array $settings, bo
  * Render the Settings API form.
  */
 function pot_render_settings_page(): void {
-	if ( ! current_user_can( 'manage_woocommerce' ) ) {
-		return;
-	}
-	$settings = pot_settings();
-	$upsell_issue  = pot_offer_product_issue( absint( $settings['upsell_product_id'] ?? 0 ), true );
-	$downsell_id   = absint( $settings['downsell_product_id'] ?? 0 );
-	$downsell_issue = pot_offer_product_issue( $downsell_id );
-	$offers_need_attention = ! empty( $settings['offer_funnel'] ) && ( '' !== $upsell_issue || '' !== $downsell_issue );
-	?>
-	<div class="wrap">
-		<h1><?php esc_html_e( 'Purple Optimize', 'purple-optimize-toolkit' ); ?></h1>
-		<p><?php esc_html_e( 'Conversion helpers use real catalog, stock, sale, and cart data. No fake urgency or recent-purchase claims are generated.', 'purple-optimize-toolkit' ); ?></p>
-		<?php if ( $offers_need_attention ) : ?>
-			<div class="notice notice-error inline"><p><strong><?php esc_html_e( 'Offer setup needs attention.', 'purple-optimize-toolkit' ); ?></strong> <?php esc_html_e( 'Review the highlighted product selection below so the funnel can display.', 'purple-optimize-toolkit' ); ?></p></div>
-		<?php endif; ?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'pot_settings_group' ); ?>
-			<table class="form-table" role="presentation">
-				<?php
-				pot_checkbox_row( 'promo_enabled', __( 'Promotion strip', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'instant_search', __( 'Instant product search', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'category_navigation', __( 'Shop category navigation', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'checkout_trust', __( 'Cart pre-checkout guidance', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'footer_policies', __( 'Footer policy links', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'post_purchase_account', __( 'Post-purchase account invitation', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'wishlist', __( 'Browser wishlist', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'sticky_cart', __( 'Sticky add to cart', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'mobile_sticky_checkout', __( 'Sticky native cart and checkout actions on mobile', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'sale_percentage', __( 'Percentage sale badge', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'recent_sales', __( 'Recent-purchase social proof', 'purple-optimize-toolkit' ), $settings );
-				pot_checkbox_row( 'social_proof_show_names', __( 'Show customer first names', 'purple-optimize-toolkit' ), $settings );
-				?>
-				<tr><th scope="row"><label for="pot-promo-text"><?php esc_html_e( 'Promotion text', 'purple-optimize-toolkit' ); ?></label></th><td><input class="regular-text" id="pot-promo-text" name="pot_settings[promo_text]" value="<?php echo esc_attr( (string) $settings['promo_text'] ); ?>"></td></tr>
-				<tr><th scope="row"><label for="pot-promo-code"><?php esc_html_e( 'Coupon code', 'purple-optimize-toolkit' ); ?></label></th><td><input id="pot-promo-code" name="pot_settings[promo_code]" value="<?php echo esc_attr( (string) $settings['promo_code'] ); ?>"><p class="description"><?php esc_html_e( 'Optional. Visitors can copy it from the promotion strip.', 'purple-optimize-toolkit' ); ?></p></td></tr>
-				<tr><th scope="row"><label for="pot-stock"><?php esc_html_e( 'Low-stock threshold', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="100" id="pot-stock" name="pot_settings[stock_threshold]" value="<?php echo esc_attr( (string) $settings['stock_threshold'] ); ?>"></td></tr>
-				<tr><th scope="row"><label for="pot-shipping"><?php esc_html_e( 'Free-shipping threshold', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" step="0.01" id="pot-shipping" name="pot_settings[free_shipping_threshold]" value="<?php echo esc_attr( (string) $settings['free_shipping_threshold'] ); ?>"><p class="description"><?php esc_html_e( 'Set to 0 to hide progress. Match this to an actual shipping method.', 'purple-optimize-toolkit' ); ?></p></td></tr>
-				<tr><th scope="row"><label for="pot-social-proof-days"><?php esc_html_e( 'Recent-purchase window', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="1" max="365" id="pot-social-proof-days" name="pot_settings[social_proof_days]" value="<?php echo esc_attr( (string) $settings['social_proof_days'] ); ?>"> <?php esc_html_e( 'days', 'purple-optimize-toolkit' ); ?><p class="description"><?php esc_html_e( 'Uses completed and processing orders only. Keep first names disabled unless your privacy policy and consent basis allow them.', 'purple-optimize-toolkit' ); ?></p></td></tr>
-				<tr><th colspan="2"><h2><?php esc_html_e( 'Upsell and downsell offers', 'purple-optimize-toolkit' ); ?></h2><p class="description"><?php esc_html_e( 'Choose one placement. Rejecting the upsell shows the optional downsell; accepting either product hides further offers for that checkout.', 'purple-optimize-toolkit' ); ?></p></th></tr>
-				<tr>
-					<th scope="row"><label for="pot-offer-enabled"><?php esc_html_e( 'Enable upsell / downsell', 'purple-optimize-toolkit' ); ?></label></th>
-					<td>
-						<label><input type="checkbox" id="pot-offer-enabled" name="pot_settings[offer_funnel]" value="1" <?php checked( ! empty( $settings['offer_funnel'] ) ); ?> aria-describedby="pot-offer-toggle-help pot-offer-toggle-status"> <?php esc_html_e( 'Show upsell and downsell offers', 'purple-optimize-toolkit' ); ?></label>
-						<p class="description" id="pot-offer-toggle-help"><?php esc_html_e( 'Saves immediately when switched on or off. Applies to all offer placements; your products, discounts, and checkout add-ons stay unchanged.', 'purple-optimize-toolkit' ); ?></p>
-						<p id="pot-offer-toggle-status" role="status" aria-live="polite"><?php echo esc_html( ! empty( $settings['offer_funnel'] ) ? __( 'Enabled', 'purple-optimize-toolkit' ) : __( 'Disabled', 'purple-optimize-toolkit' ) ); ?></p>
-						<noscript><p><?php esc_html_e( 'JavaScript is unavailable. Use Save Changes below to save this checkbox.', 'purple-optimize-toolkit' ); ?></p></noscript>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><label for="pot-offer-placement"><?php esc_html_e( 'Offer placement', 'purple-optimize-toolkit' ); ?></label></th>
-					<td>
-						<select id="pot-offer-placement" name="pot_settings[offer_placement]">
-							<option value="pre_checkout" <?php selected( 'pre_checkout', $settings['offer_placement'] ); ?>><?php esc_html_e( 'Full page before checkout', 'purple-optimize-toolkit' ); ?></option>
-							<option value="checkout_inline" <?php selected( 'checkout_inline', $settings['offer_placement'] ); ?>><?php esc_html_e( 'Inline before Place Order', 'purple-optimize-toolkit' ); ?></option>
-							<option value="post_purchase" <?php selected( 'post_purchase', $settings['offer_placement'] ); ?>><?php esc_html_e( 'After purchase follow-up', 'purple-optimize-toolkit' ); ?></option>
-						</select>
-						<p class="description"><?php esc_html_e( 'After-purchase acceptance starts a separate checkout and order; it never silently changes or recharges the completed order.', 'purple-optimize-toolkit' ); ?></p>
-					</td>
-				</tr>
-				<?php pot_product_select_row( 'upsell_product_id', __( 'Upsell product', 'purple-optimize-toolkit' ), $settings, true ); ?>
-				<tr><th scope="row"><label for="pot-upsell-discount"><?php esc_html_e( 'Upsell discount', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="100" id="pot-upsell-discount" name="pot_settings[upsell_discount]" value="<?php echo esc_attr( (string) $settings['upsell_discount'] ); ?>">%</td></tr>
-				<tr><th scope="row"><label for="pot-upsell-countdown"><?php esc_html_e( 'Upsell countdown', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="1440" id="pot-upsell-countdown" name="pot_settings[upsell_countdown]" value="<?php echo esc_attr( (string) $settings['upsell_countdown'] ); ?>"> <?php esc_html_e( 'minutes', 'purple-optimize-toolkit' ); ?><p class="description"><?php esc_html_e( 'Set to 0 to disable. Refreshing does not restart the timer.', 'purple-optimize-toolkit' ); ?></p></td></tr>
-				<?php pot_product_select_row( 'downsell_product_id', __( 'Downsell product', 'purple-optimize-toolkit' ), $settings ); ?>
-				<tr><th scope="row"><label for="pot-downsell-discount"><?php esc_html_e( 'Downsell discount', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="100" id="pot-downsell-discount" name="pot_settings[downsell_discount]" value="<?php echo esc_attr( (string) $settings['downsell_discount'] ); ?>">%</td></tr>
-				<tr><th scope="row"><label for="pot-downsell-countdown"><?php esc_html_e( 'Downsell countdown', 'purple-optimize-toolkit' ); ?></label></th><td><input type="number" min="0" max="1440" id="pot-downsell-countdown" name="pot_settings[downsell_countdown]" value="<?php echo esc_attr( (string) $settings['downsell_countdown'] ); ?>"> <?php esc_html_e( 'minutes', 'purple-optimize-toolkit' ); ?><p class="description"><?php esc_html_e( 'Set to 0 to disable. Use a duration the store will actually honor.', 'purple-optimize-toolkit' ); ?></p></td></tr>
-				<?php foreach ( array( 'reassurance_one', 'reassurance_two', 'reassurance_three' ) as $index => $key ) : ?>
-				<tr><th scope="row"><label for="pot-reassurance-<?php echo esc_attr( (string) $index ); ?>"><?php echo esc_html( sprintf( __( 'Reassurance point %d', 'purple-optimize-toolkit' ), $index + 1 ) ); ?></label></th><td><input class="regular-text" id="pot-reassurance-<?php echo esc_attr( (string) $index ); ?>" name="pot_settings[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( (string) $settings[ $key ] ); ?>"></td></tr>
-				<?php endforeach; ?>
-			</table>
-			<?php submit_button(); ?>
-		</form>
-		<?php do_action( 'pot_after_settings_form' ); ?>
-	</div>
-	<?php
+	pot_render_workspace();
 }
 
 /**
@@ -504,7 +453,6 @@ function pot_enqueue_assets(): void {
 			'minutesLabel'      => __( 'Minutes', 'purple-optimize-toolkit' ),
 			'secondsLabel'      => __( 'Seconds', 'purple-optimize-toolkit' ),
 			'cartUrl'           => wc_get_cart_url(),
-			'viewCart'          => __( 'View cart', 'purple-optimize-toolkit' ),
 			'addedToCart'       => __( 'Added to cart ✓', 'purple-optimize-toolkit' ),
 			'freeShippingReached' => __( 'You reached the configured free-shipping threshold.', 'purple-optimize-toolkit' ),
 			'freeShippingRemaining' => __( 'Add %s more to reach the configured free-shipping threshold.', 'purple-optimize-toolkit' ),

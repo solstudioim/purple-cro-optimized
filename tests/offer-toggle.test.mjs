@@ -4,6 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 const plugin = new URL('../wp-content/plugins/purple-optimize-toolkit/', import.meta.url);
 const php = readFileSync(new URL('purple-optimize-toolkit.php', plugin), 'utf8');
+const offerControls = readFileSync(new URL('includes/admin-offers.php', plugin), 'utf8');
 const js = readFileSync(new URL('assets/admin-offer-toggle.js', plugin), 'utf8');
 
 function setup(fetch) {
@@ -58,6 +59,6 @@ test('the one-click endpoint enforces permissions and nonce, and the control is 
 	assert.match(handler, /check_ajax_referer\( 'pot_set_offer_enabled', 'nonce' \)/);
 	assert.match(handler, /in_array\( \$enabled, array\( '0', '1' \), true \)/);
 	assert.doesNotMatch(php, /wp_ajax_nopriv_pot_set_offer_enabled/);
-	assert.equal((php.match(/name="pot_settings\[offer_funnel\]"/g) || []).length, 1);
+	assert.equal((offerControls.match(/name="pot_settings\[offer_funnel\]"/g) || []).length, 1);
 	assert.doesNotMatch(php, /pot_checkbox_row\( 'offer_funnel'/);
 });

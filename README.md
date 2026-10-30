@@ -4,9 +4,9 @@ Purple CRO Optimized is a conversion-focused WooCommerce implementation built
 on Woo's Purple block theme. It applies common ecommerce CRO patterns and
 implements the 16 recommendations in Baymard's ecommerce CRO framework.
 
-**Current child-theme release:** `0.5.12`
+**Current child-theme release:** `0.5.14`
 
-**Current toolkit release:** `0.9.0`
+**Current toolkit release:** `0.10.0`
 
 **Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 
@@ -19,10 +19,17 @@ The child theme is built on the
 [Woo Purple parent theme](https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple),
 created by Automattic and distributed under GPLv2 or later. The canonical
 upstream source used for local development is vendored at
-`wp-content/themes/purple` from `woocommerce/woo-themes` (`trunk/purple`).
+`wp-content/themes/purple` from `woocommerce/woocommerce` (`trunk/themes/purple`).
 
-Purple is maintained in WooCommerce's public `woocommerce/woo-themes`
+Purple is maintained in WooCommerce's public `woocommerce/woocommerce`
 repository. It is not sourced from a WordPress.com repository.
+
+The vendored parent is Purple `1.0.3`, pinned to commit
+`2414b5c966ae7e79840e9b2bb6db607a4a703e8e` (2026-10-30 sync).
+Use WordPress 7.1+, PHP 7.4+, and WooCommerce 11.1+ with this child release.
+The parent compatibility styles and navigation overlay are inherited; the child
+keeps its own CRO layouts, system fonts, colors, and mini-cart drawer behavior.
+Updating the theme files does not replace templates saved in the Site Editor.
 
 ## WordPress.org submission preparation
 
@@ -57,8 +64,8 @@ items that require confirmation from the Themes Team before submission.
   or silently recharges the completed order.
 - Accepted offers are added once, priced securely in the WooCommerce cart, and
   then hidden while the buyer proceeds to the normal checkout.
-- Single-product add-to-cart confirmations reveal one clear View cart action
-  below the existing purchase button.
+- Single-product additions open the native mini-cart drawer without a duplicate
+  View cart action below the existing purchase button.
 - Optional mobile CSS treatment that keeps WooCommerce’s existing cart checkout
   and checkout completion controls fixed in reach without rendering duplicates.
 - Sticky product add-to-cart remains available on larger screens and is hidden
@@ -107,6 +114,22 @@ active.
 
 Use `[purple_optimize_wishlist]` on a page to render the browser wishlist.
 
+### Setup and settings workspace
+
+Open **Appearance → Purple Optimize setup** after activating the child theme.
+It checks requirements and offers an explicit companion install/activate action.
+Until a GitHub release is published, build/download the separate toolkit ZIP and
+upload it through **Plugins → Add New**. No plugin is silently downloaded.
+
+**WooCommerce → Purple Optimize** now uses a persistent sidebar with a guided
+Overview and sections for Storefront, Product pages, Cart & checkout, Offers and
+Privacy. Saves preserve settings in other sections. Offers include a saved,
+catalog-backed preview. Design editing stays in the Site Editor.
+
+Build separate installable packages with `python3 tools/build-packages.py`.
+See [setup, release and verification details](docs/companion-setup-and-release.md).
+WordPress.org listing is planned; the toolkit is currently distributed from this repo.
+
 ### One-click upsell/downsell switch
 
 Under **WooCommerce → Purple Optimize → Upsell and downsell offers**, use
@@ -119,7 +142,7 @@ Without JavaScript, the checkbox can still be saved with **Save Changes**.
 
 ### Checkout add-ons and helpful content
 
-In **WooCommerce → Purple Optimize**, scroll to **Checkout add-ons and helpful
+In **WooCommerce → Purple Optimize**, open **Cart & checkout → Checkout add-ons and helpful
 content**. This section has its own **Save checkout features** button.
 
 - Enable up to four independent add-ons above the native **Place order** button.
