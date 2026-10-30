@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.11.5
+ * Version: 0.11.10
  * Requires at least: 7.1
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.11.5' );
+define( 'POT_VERSION', '0.11.10' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -27,6 +27,7 @@ require_once POT_PATH . 'includes/storefront-presentation.php';
 require_once POT_PATH . 'includes/checkout-extras.php';
 require_once POT_PATH . 'includes/checkout-content.php';
 require_once POT_PATH . 'includes/admin-settings.php';
+require_once POT_PATH . 'includes/reviews.php';
 
 /** Declare compatibility for WooCommerce storage and checkout features used by this plugin. */
 function pot_declare_woocommerce_compatibility(): void {
@@ -253,6 +254,16 @@ function pot_admin_assets( string $hook_suffix ): void {
 	wp_enqueue_style( 'pot-admin-settings', POT_URL . 'assets/admin-settings.css', array(), POT_VERSION );
 	wp_enqueue_script( 'pot-admin-settings', POT_URL . 'assets/admin-settings.js', array( 'jquery', 'wc-enhanced-select', 'wp-color-picker' ), POT_VERSION, true );
 	wp_enqueue_script( 'wc-enhanced-select' );
+	pot_reviews_assets();
+	wp_localize_script( 'pot-admin-settings', 'potReviewBuilder', array(
+		'url' => admin_url( 'admin-ajax.php' ),
+		'nonce' => wp_create_nonce( 'pot_preview_reviews' ),
+		'loading' => __( 'Generating preview…', 'purple-optimize-toolkit' ),
+		'error' => __( 'Could not generate the preview. Check your selection and try again.', 'purple-optimize-toolkit' ),
+		'changed' => __( 'Selection changed. Generate a new shortcode and preview.', 'purple-optimize-toolkit' ),
+		'copied' => __( 'Shortcode copied.', 'purple-optimize-toolkit' ),
+		'copyHelp' => __( 'Select and copy the shortcode below.', 'purple-optimize-toolkit' ),
+	) );
 	wp_enqueue_script( 'pot-admin-offer-toggle', POT_URL . 'assets/admin-offer-toggle.js', array(), POT_VERSION, true );
 	wp_localize_script( 'pot-admin-offer-toggle', 'potOfferToggle', array(
 		'url'      => admin_url( 'admin-ajax.php' ),

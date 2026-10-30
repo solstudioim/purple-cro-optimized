@@ -41,3 +41,5 @@
 	.pot-setup-row { flex-wrap: wrap; }
 	.pot-admin-workspace input, .pot-admin-workspace select, .pot-admin-workspace textarea { font-size: 16px; }
 }
+
+.pot-review-builder [hidden] { display: none !important; }

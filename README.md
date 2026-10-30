@@ -5,7 +5,7 @@ on Woo's Purple block theme. It preserves the parent's appearance and adds optio
 
 **Current child-theme release:** `0.6.0`
 
-**Current toolkit release:** `0.11.5`
+**Current toolkit release:** `0.11.10`
 
 **Historical demo (previous custom design):** https://purplecrodemo.wpcomstaging.com/
 
@@ -31,7 +31,9 @@ The existing CRO feature defaults and saved settings are preserved. Offers and
 checkout add-ons still require explicit product configuration; recent-purchase proof remains off.
 Updating the theme files does not replace templates saved in the Site Editor.
 
-## Local preview: 0.6.0 / 0.11.5 (unreleased)
+## Feedback baseline: child 0.6.0 / toolkit 0.11.10
+
+**Development freeze:** toolkit 0.11.10 is the feedback baseline. Further feature and styling changes are paused pending feedback from the upstream Purple theme developers. Resume development only when the maintainer explicitly reopens it. Repository sync does not publish GitHub release assets or deploy a site.
 
 Toolkit 0.11.5 restores the native cart drawer opening after add to cart when the
 child theme’s mini-cart has no saved behavior choice. Explicit block choices are
@@ -142,7 +144,7 @@ upload it through **Plugins → Add New**. No plugin is silently downloaded.
 
 **WooCommerce → Purple Optimize** now uses a persistent sidebar with a guided
 Overview and sections for Storefront, Product pages, Cart & checkout, Offers and
-Privacy. Saves preserve settings in other sections. Offers include a saved,
+Social proof. Saves preserve settings in other sections. Offers include a saved,
 catalog-backed preview. Design editing stays in the Site Editor.
 
 Build separate installable packages with `python3 tools/build-packages.py`.
@@ -240,3 +242,45 @@ content editor's code view, then return to the visual editor to edit the copy.
 The contact link uses `/contact/`; adjust it for the destination store. Replace
 the demo review with an approved real review before using it on a live store.
 This example does not create a site-specific post or change merchant settings.
+
+## Reviews & testimonials
+
+Open **WooCommerce → Purple Optimize → Social proof**. Recent-purchase settings
+remain in their existing section; **Reviews & testimonials** is an independent
+shortcode configurator, with no global save or automatic placement.
+
+Choose all products, selected products (search or comma-separated product IDs),
+or specific review IDs. Set a maximum of 1–12 reviews, minimum rating, newest/oldest
+order, first-name/anonymous attribution, optional heading and static cards/rotator.
+Generate and preview, then copy the shortcode into a WordPress Shortcode block,
+a shortcode-compatible widget, or the helpful checkout content editor. Publish that
+content to display it. Each shortcode stores its own selection; reviews remain live.
+Only approved reviews on public, published, unprotected products appear. Product
+attribution is always visible; verified-owner labels use WooCommerce verification.
+No email addresses are shown. Empty selections render nothing; existing product-page
+reviews are unchanged. This version reuses native reviews and does not scrape external sites.
+
+Example (replace IDs with your own):
+
+`[purple_optimize_reviews source="products" products="22,18" limit="2" layout="list" author="anonymous"]`
+
+For specific reviews use `source="reviews" review_ids="101,102"`. Rotators use
+`layout="rotator"`; autoplay is off by default (`autoplay="0"`). Optional autoplay
+accepts 5–30 seconds, pauses on hover/focus, and respects reduced motion. Without
+JavaScript all selected reviews remain readable. Theme fonts/colors are inherited.
+The checkout editor permits only this shortcode, not arbitrary shortcode execution.
+
+Checkout add-ons support an **Optional discount (%)** on each configured product.
+Leave it blank or enter 0 to use the current catalog price, including native sale
+pricing. A configured percentage is an extra discount off that current price and
+applies only to the checkout add-on line, never ordinary catalog additions.
+Accepted discounts remain stable across checkout refreshes and configuration changes;
+removing and accepting again uses the latest configuration. Native WooCommerce taxes,
+coupons and order calculations use the accepted line price. No payment is submitted
+by adding an optional item. Existing saved add-ons without this field keep their pricing.
+
+Add-on cards use one combined label, for example **5% off · Save $6.20** for
+$124.00 → $117.80. WooCommerce’s native summary and item details stay unchanged.
+The card’s percentage and saving compare the same regular and accepted prices,
+including any catalog sale, using native Store API currency rounding. The configured
+extra percentage remains in item details; price calculation is unchanged.
