@@ -1,7 +1,7 @@
 /* Conversion elements only. Purple owns global layout, palette and typography. */
 .pot-promo {
- padding-block: .65rem; background: var(--wp--preset--color--theme-3, CanvasText);
- color: var(--wp--preset--color--theme-1, Canvas); font-size: .875em; font-weight: 600;
+ padding-block: .65rem; background: var(--pot-promo-background, var(--wp--preset--color--theme-3, CanvasText));
+ color: var(--pot-promo-text, var(--wp--preset--color--theme-1, Canvas)); font-size: .875em; font-weight: 600;
 }
 .pot-promo-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .5rem 1rem; }
 .pot-category-nav, .pot-footer-policies { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem; padding-block: .75rem; }

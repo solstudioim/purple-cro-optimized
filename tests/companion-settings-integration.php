@@ -30,6 +30,13 @@ try {
 	}
 	$expect( ! is_dir( get_stylesheet_directory() . '/templates' ) && ! is_dir( get_stylesheet_directory() . '/parts' ), 'Child must inherit parent layouts.' );
 	$settings['promo_text'] = 'Keep my promotion';
+	$settings['promo_background'] = '#d4af37';
+	$expect( '#ffffff' === pot_promo_text_color( '#000' ), 'Dark backgrounds require white text.' );
+	$expect( '#000000' === pot_promo_text_color( '#fff' ), 'Light backgrounds require black text.' );
+	$invalid_color = pot_sanitize_settings( array_merge( $settings, array( 'promo_background' => 'red;position:fixed' ) ) );
+	$expect( '' === $invalid_color['promo_background'], 'Custom background must reject CSS injection.' );
+	$invalid_color = pot_sanitize_settings( array_merge( $settings, array( 'promo_background' => array( '#fff' ) ) ) );
+	$expect( '' === $invalid_color['promo_background'], 'Malformed background must fall back to the parent theme.' );
 	$settings['offer_funnel'] = 1;
 	$settings['upsell_discount'] = 23;
 	$settings['recent_sales'] = 1;

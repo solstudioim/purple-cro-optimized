@@ -94,3 +94,7 @@ Keep Purple parent templates, palettes, typography and native commerce styling. 
 - User tested the site and explicitly authorized syncing the work to the remote repository.
 - Remote main at 11188e7 has the same source tree as local base 2c2316d. Create a new codex branch from main, commit only task source/docs/tests/thread files and optional demo block example. Keep .env, old artifact directory and unrelated screenshot/onboarding-thread modifications unstaged.
 - Site post 62 content is captured as an optional portable example (relative contact URL, visibly fictional demo review); plugin installation does not silently insert this merchant-specific content.
+
+- During remote sync, user requested customizable promotion background. Add native WP color picker, sanitized optional hex setting, clear-to-parent default and automatic black/white contrast scoped only to the strip. Include in the same PR before merging; toolkit preview 0.11.4.
+
+- Promotion custom color passed native picker save/read-back for light and dark hex backgrounds, automatic foreground contrast, unrelated setting preservation and Clear reset. Invalid CSS/malformed inputs rejected in integration tests. Default remains parent accent. Included in toolkit 0.11.4 before remote merge. GitHub connector PR creation was forbidden; using configured gh CLI after successful git push.

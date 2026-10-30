@@ -16,6 +16,15 @@
 			queueMicrotask(() => { if (!event.defaultPrevented) dirty.delete(form); });
 		});
 	}
+	if (typeof jQuery !== 'undefined' && jQuery.fn.wpColorPicker) {
+		jQuery('.pot-color-picker').each(function () {
+			const input = this;
+			jQuery(input).wpColorPicker({
+				change: () => { if (input.form) dirty.add(input.form); },
+				clear: () => { if (input.form) dirty.add(input.form); },
+			});
+		});
+	}
 	// WooCommerce's searchable product control emits jQuery events.
 	if (typeof jQuery !== 'undefined') {
 		jQuery('.pot-admin-workspace .wc-product-search').on('change', function () {

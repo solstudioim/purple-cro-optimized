@@ -23,7 +23,7 @@ function pot_settings_sections(): array {
 /** Return settings owned by one section; absent controls in other sections must survive. */
 function pot_settings_section_keys( string $section ): array {
 	$keys = array(
-		'storefront' => array( 'promo_enabled', 'promo_text', 'promo_code', 'instant_search', 'category_navigation', 'footer_policies', 'wishlist' ),
+		'storefront' => array( 'promo_enabled', 'promo_text', 'promo_code', 'promo_background', 'instant_search', 'category_navigation', 'footer_policies', 'wishlist' ),
 		'products'   => array( 'product_guidance', 'sticky_cart', 'sale_percentage', 'stock_threshold', 'reassurance_one', 'reassurance_two', 'reassurance_three' ),
 		'checkout'   => array( 'checkout_labels', 'checkout_trust', 'post_purchase_account', 'mobile_sticky_checkout', 'free_shipping_threshold' ),
 		'offers'     => array( 'offer_funnel', 'offer_placement', 'upsell_product_id', 'upsell_discount', 'upsell_countdown', 'downsell_product_id', 'downsell_discount', 'downsell_countdown' ),
@@ -133,6 +133,12 @@ function pot_render_workspace(): void {
 		case 'storefront':
 			foreach ( array( 'promo_enabled' => __( 'Promotion strip', 'purple-optimize-toolkit' ), 'instant_search' => __( 'Instant product search', 'purple-optimize-toolkit' ), 'category_navigation' => __( 'Shop category navigation', 'purple-optimize-toolkit' ), 'footer_policies' => __( 'Footer policy links', 'purple-optimize-toolkit' ), 'wishlist' => __( 'Browser wishlist', 'purple-optimize-toolkit' ) ) as $key => $label ) { pot_checkbox_row( $key, $label, $settings ); }
 			echo '<p class="description">' . esc_html__( 'Promotion strip adds a highlighted store notice. Browser wishlist adds a link beside the native header cart controls. Enabling wishlist creates or reuses a published page; saved items stay in the visitor’s browser.', 'purple-optimize-toolkit' ) . '</p>';
+			?>
+			<tr><th scope="row"><label for="pot-promo-background"><?php esc_html_e( 'Promotion background', 'purple-optimize-toolkit' ); ?></label></th><td>
+			<input type="text" id="pot-promo-background" class="pot-color-picker" name="pot_settings[promo_background]" value="<?php echo esc_attr( $settings['promo_background'] ); ?>">
+			<p class="description"><?php esc_html_e( 'Choose a custom background, or clear it to follow the parent theme accent. Text color adjusts automatically for contrast.', 'purple-optimize-toolkit' ); ?></p>
+			</td></tr>
+			<?php
 			pot_workspace_field( 'promo_text', __( 'Promotion text', 'purple-optimize-toolkit' ), $settings );
 			pot_workspace_field( 'promo_code', __( 'Coupon code', 'purple-optimize-toolkit' ), $settings, 'text', __( 'Optional. Use a real coupon configured in WooCommerce.', 'purple-optimize-toolkit' ) );
 			break;

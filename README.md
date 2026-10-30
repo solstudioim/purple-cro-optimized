@@ -5,7 +5,7 @@ on Woo's Purple block theme. It preserves the parent's appearance and adds optio
 
 **Current child-theme release:** `0.6.0`
 
-**Current toolkit release:** `0.11.3`
+**Current toolkit release:** `0.11.4`
 
 **Historical demo (previous custom design):** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 
@@ -31,7 +31,7 @@ The existing CRO feature defaults and saved settings are preserved. Offers and
 checkout add-ons still require explicit product configuration; recent-purchase proof remains off.
 Updating the theme files does not replace templates saved in the Site Editor.
 
-## Local preview: 0.6.0 / 0.11.3 (unreleased)
+## Local preview: 0.6.0 / 0.11.4 (unreleased)
 
 Upload the child ZIP and toolkit ZIP separately on a test site, then activate both.
 The future GitHub installer asset for this preview has not been published; use the
@@ -50,7 +50,9 @@ items that require confirmation from the Themes Team before submission.
 
 ## Included conversion features
 
-- Configurable promotion strip and coupon copy button.
+- Configurable promotion strip and coupon copy button. The Storefront section
+  includes a background color picker with automatic text contrast; clear the
+  color to follow the parent theme accent again.
 - Category-scoped instant product search with SKU lookup, bounded typo tolerance,
   keyboard navigation, and a nonce-protected WooCommerce endpoint.
 - Top-level product-category navigation and real policy/footer destinations.

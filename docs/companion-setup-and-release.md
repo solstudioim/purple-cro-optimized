@@ -1,4 +1,4 @@
-> Local preview: child 0.6.0 and toolkit 0.11.3 are unpublished. Upload both locally built ZIPs manually for testing. The previous released flow below describes 0.5.14; do not publish a tag until local review is complete.
+> Local preview: child 0.6.0 and toolkit 0.11.4 are unpublished. Upload both locally built ZIPs manually for testing. The previous released flow below describes 0.5.14; do not publish a tag until local review is complete.
 
 # Companion setup, settings and releases
 

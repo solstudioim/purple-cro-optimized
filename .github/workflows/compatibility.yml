@@ -87,6 +87,7 @@ jobs:
           node tests/parent-native.e2e.mjs
           node tests/wishlist-navigation.e2e.mjs
           node tests/storefront-alignment.e2e.mjs
+          node tests/promotion-color.e2e.mjs
           wp eval-file tests/checkout-extras-integration.php prepare --path="$POT_WP_PATH"
           trap 'wp eval-file tests/checkout-extras-integration.php cleanup --path="$POT_WP_PATH"' EXIT
           POT_DELAY_CHECKOUT_EXTRAS=1 node tests/checkout-extras.e2e.mjs
@@ -97,7 +98,7 @@ jobs:
           trap - EXIT
           node tests/checkout-content.e2e.mjs
           python3 tools/build-packages.py --output "$RUNNER_TEMP/packages"
-          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.11.3.zip"
+          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.11.4.zip"
           export POT_DISPOSABLE_SITE=1
           node tests/companion-setup.e2e.mjs
       - uses: actions/upload-artifact@v4

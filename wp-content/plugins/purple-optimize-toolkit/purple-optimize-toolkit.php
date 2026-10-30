@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.11.3
+ * Version: 0.11.4
  * Requires at least: 7.1
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.11.3' );
+define( 'POT_VERSION', '0.11.4' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -48,6 +48,7 @@ function pot_defaults(): array {
 		'promo_enabled'          => 1,
 		'promo_text'             => __( 'Free shipping on qualifying orders', 'purple-optimize-toolkit' ),
 		'promo_code'             => '',
+		'promo_background'       => '',
 		'instant_search'         => 1,
 		'category_navigation'    => 1,
 		'checkout_trust'         => 1,
@@ -204,6 +205,7 @@ function pot_sanitize_settings( $input ): array {
 
 	$output['promo_text']              = sanitize_text_field( $input['promo_text'] ?? $defaults['promo_text'] );
 	$output['promo_code']              = sanitize_text_field( $input['promo_code'] ?? '' );
+	$output['promo_background']        = sanitize_hex_color( is_string( $input['promo_background'] ?? null ) ? $input['promo_background'] : '' ) ?: '';
 	$output['stock_threshold']         = max( 0, min( 100, absint( $input['stock_threshold'] ?? $defaults['stock_threshold'] ) ) );
 	$output['free_shipping_threshold'] = max( 0, (float) ( $input['free_shipping_threshold'] ?? $defaults['free_shipping_threshold'] ) );
 	$output['social_proof_days']       = max( 1, min( 365, absint( $input['social_proof_days'] ?? $defaults['social_proof_days'] ) ) );
@@ -247,8 +249,9 @@ function pot_admin_assets( string $hook_suffix ): void {
 		return;
 	}
 	wp_enqueue_style( 'woocommerce_admin_styles' );
+	wp_enqueue_style( 'wp-color-picker' );
 	wp_enqueue_style( 'pot-admin-settings', POT_URL . 'assets/admin-settings.css', array(), POT_VERSION );
-	wp_enqueue_script( 'pot-admin-settings', POT_URL . 'assets/admin-settings.js', array( 'jquery', 'wc-enhanced-select' ), POT_VERSION, true );
+	wp_enqueue_script( 'pot-admin-settings', POT_URL . 'assets/admin-settings.js', array( 'jquery', 'wc-enhanced-select', 'wp-color-picker' ), POT_VERSION, true );
 	wp_enqueue_script( 'wc-enhanced-select' );
 	wp_enqueue_script( 'pot-admin-offer-toggle', POT_URL . 'assets/admin-offer-toggle.js', array(), POT_VERSION, true );
 	wp_localize_script( 'pot-admin-offer-toggle', 'potOfferToggle', array(
@@ -495,6 +498,30 @@ function pot_body_classes( array $classes ): array {
 add_filter( 'body_class', 'pot_body_classes' );
 
 /**
+ * Choose the higher-contrast black/white foreground for a custom background.
+ *
+ * @param string $background Valid three- or six-digit hex color.
+ * @return string Hex foreground color, or empty for an invalid background.
+ */
+function pot_promo_text_color( string $background ): string {
+	$background = sanitize_hex_color( $background );
+	if ( ! $background ) {
+		return '';
+	}
+	$hex = substr( $background, 1 );
+	if ( 3 === strlen( $hex ) ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+	$linear = array();
+	foreach ( str_split( $hex, 2 ) as $channel ) {
+		$value = hexdec( $channel ) / 255;
+		$linear[] = $value <= 0.04045 ? $value / 12.92 : pow( ( $value + 0.055 ) / 1.055, 2.4 );
+	}
+	$luminance = 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2];
+	return 1.05 / ( $luminance + 0.05 ) >= ( $luminance + 0.05 ) / 0.05 ? '#ffffff' : '#000000';
+}
+
+/**
  * Render the configurable promotion strip.
  */
 function pot_promotion_strip(): void {
@@ -502,12 +529,14 @@ function pot_promotion_strip(): void {
 	if ( pot_is_offer_page() || pot_is_active_checkout() ) {
 		return;
 	}
+	$background = sanitize_hex_color( (string) $settings['promo_background'] );
+	$custom_style = $background ? '--pot-promo-background:' . $background . ';--pot-promo-text:' . pot_promo_text_color( $background ) . ';' : '';
 	$promotion = ! empty( $settings['promo_enabled'] ) && '' !== trim( (string) $settings['promo_text'] );
 	if ( ! $promotion ) {
 		return;
 	}
 	?>
-	<aside class="pot-promo has-global-padding is-layout-constrained" aria-label="<?php esc_attr_e( 'Store promotion', 'purple-optimize-toolkit' ); ?>">
+	<aside class="pot-promo has-global-padding is-layout-constrained" style="<?php echo esc_attr( $custom_style ); ?>" aria-label="<?php esc_attr_e( 'Store promotion', 'purple-optimize-toolkit' ); ?>">
 		<div class="pot-promo-inner alignwide">
 		<span><?php echo esc_html( (string) $settings['promo_text'] ); ?></span>
 		<?php if ( '' !== trim( (string) $settings['promo_code'] ) ) : ?>

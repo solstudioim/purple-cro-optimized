@@ -5,7 +5,7 @@ Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 0.11.3
+Stable tag: 0.11.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,14 +34,14 @@ orders; names must remain off unless the merchant has an appropriate privacy bas
 No external analytics service is used. Offers never silently recharge an order;
 after-purchase acceptance starts a separate checkout and order.
 
-Local preview 0.11.3 is unpublished. Upload the local ZIP for testing; do not use
+Local preview 0.11.4 is unpublished. Upload the local ZIP for testing; do not use
 the child setup download action until the matching GitHub asset is published.
 Older Purple versions show a recommendation, without blocking toolkit installation.
 
 == Installation ==
 
 1. Install and activate WooCommerce 11.1+ on WordPress 7.1+ and PHP 7.4+.
-2. Upload purple-optimize-toolkit-0.11.3.zip under Plugins > Add New > Upload Plugin.
+2. Upload purple-optimize-toolkit-0.11.4.zip under Plugins > Add New > Upload Plugin.
 3. Activate the toolkit, then open WooCommerce > Purple Optimize.
 4. Review compatibility checks and settings. Existing choices are preserved.
 
@@ -71,6 +71,10 @@ Save checkout features action. The offer enable/disable switch saves immediately
 and restores the previous state if saving fails. Settings in other sections are retained.
 
 == Changelog ==
+
+= 0.11.4 =
+* Add a native promotion background color picker with clear-to-parent fallback.
+* Choose a contrasting text color automatically for custom backgrounds.
 
 = 0.11.3 =
 * Move wishlist access from the promotion notice to native header cart controls.
