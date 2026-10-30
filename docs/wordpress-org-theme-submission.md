@@ -12,7 +12,7 @@ Build the ZIP from a committed release after creating and checking the resolved
 ```sh
 git archive --format=zip \
   --prefix=purple-optimize/ \
-  -o /Users/sol/Codex/artifacts/purple-cro-optimized/purple-optimize-0.5.14.zip \
+  -o /Users/sol/Codex/artifacts/purple-cro-optimized/purple-optimize-0.6.0.zip \
   HEAD:wp-content/themes/purple-optimize
 ```
 

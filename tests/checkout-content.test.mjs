@@ -29,6 +29,6 @@ test('shared typography and block assets reach both editor and checkout', () => 
 	assert.match(php, /'pot_checkout_info' === \$screen->post_type/);
 	assert.deepEqual(JSON.parse(read('blocks/checkout-content/block.json')).style, ['pot-checkout-extras', 'pot-checkout-content']);
 	const css = read('assets/checkout-content.css');
-	assert.match(css, /\.editor-styles-wrapper/);
-	assert.match(css, /:is\(strong, b\).*font-weight: 700/);
+	assert.doesNotMatch(css, /\.editor-styles-wrapper|font-family:/);
+	assert.match(css, /pot-checkout-content/);
 });

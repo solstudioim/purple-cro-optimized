@@ -50,7 +50,7 @@
 					el('div', { className: 'pot-checkout-upsell-details' },
 						el('div', { className: 'pot-checkout-upsell-image', dangerouslySetInnerHTML: { __html: offer.image } }),
 						el('p', null, offer.description)),
-					el('button', { type: 'button', disabled, onClick: () => toggle(offer), 'aria-label': sprintf(offer.added ? __('Remove %s', domain) : __('Add %s to my order', domain), offer.title) },
+					el('button', { className: 'wp-element-button', type: 'button', disabled, onClick: () => toggle(offer), 'aria-label': sprintf(offer.added ? __('Remove %s', domain) : __('Add %s to my order', domain), offer.title) },
 						alreadyInCart ? __('Already in your order', domain) : offer.added ? __('Remove from my order', domain) : __('Yes! Add to my order', domain)));
 			}),
 			el('p', { role: 'status', className: 'pot-checkout-extra-status' }, message),

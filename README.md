@@ -1,18 +1,17 @@
 # Purple CRO Optimized
 
 Purple CRO Optimized is a conversion-focused WooCommerce implementation built
-on Woo's Purple block theme. It applies common ecommerce CRO patterns and
-implements the 16 recommendations in Baymard's ecommerce CRO framework.
+on Woo's Purple block theme. It preserves the parent's appearance and adds optional conversion elements.
 
-**Current child-theme release:** `0.5.14`
+**Current child-theme release:** `0.6.0`
 
-**Current toolkit release:** `0.10.0`
+**Current toolkit release:** `0.11.3`
 
-**Demo video:** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
+**Historical demo (previous custom design):** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
 
 The project is deliberately split into two packages:
 
-- `wp-content/themes/purple-optimize`: a child theme for presentation and layout.
+- `wp-content/themes/purple-optimize`: a child theme that inherits Purple presentation and adds companion setup.
 - `wp-content/plugins/purple-optimize-toolkit`: optional store functionality.
 
 The child theme is built on the
@@ -27,9 +26,18 @@ repository. It is not sourced from a WordPress.com repository.
 The vendored parent is Purple `1.0.3`, pinned to commit
 `2414b5c966ae7e79840e9b2bb6db607a4a703e8e` (2026-10-30 sync).
 Use WordPress 7.1+, PHP 7.4+, and WooCommerce 11.1+ with this child release.
-The parent compatibility styles and navigation overlay are inherited; the child
-keeps its own CRO layouts, system fonts, colors, and mini-cart drawer behavior.
+All parent templates, navigation, colors, typography and commerce styling are inherited.
+The existing CRO feature defaults and saved settings are preserved. Offers and
+checkout add-ons still require explicit product configuration; recent-purchase proof remains off.
 Updating the theme files does not replace templates saved in the Site Editor.
+
+## Local preview: 0.6.0 / 0.11.3 (unreleased)
+
+Upload the child ZIP and toolkit ZIP separately on a test site, then activate both.
+The future GitHub installer asset for this preview has not been published; use the
+local toolkit ZIP instead of the setup screen's download action. No parent files change.
+Disable toolkit features when comparing with parent-only appearance. Existing Site
+Editor templates and global styles remain saved and may mask inherited defaults.
 
 ## WordPress.org submission preparation
 
@@ -48,18 +56,23 @@ items that require confirmation from the Themes Team before submission.
 - Top-level product-category navigation and real policy/footer destinations.
 - Honest percentage sale badges calculated from catalog prices.
 - Low-stock messaging based only on WooCommerce inventory.
-- Eye-catching sale countdowns with animated seconds, shown only when a real scheduled sale end exists.
-- Guest wishlist stored in the visitor's browser, with a wishlist shortcode.
+- Sale countdowns, shown only when a real scheduled sale end exists.
+- Guest wishlist stored in the visitor's browser, with a saved-item count beside the existing header cart controls.
+  Enable **Browser wishlist** under WooCommerce → Purple Optimize → Storefront.
+  The toolkit reuses a published shortcode page or creates a native Wishlist page
+  when an administrator enables the feature. Promotion strip is a separate switch.
 - Free-shipping progress based on the configured threshold and live cart subtotal.
 - Sticky single-product add-to-cart bar.
 - Prominent real review summaries and an approved featured review near the buy box.
-- Product reassurance plus checkout progress, trust/policy guidance, and visible
+- Optional product guidance, checkout trust/policy guidance, and visible
   Required/Optional field labels.
 - Privacy-controlled recent-purchase proof backed only by processing/completed
   WooCommerce orders; anonymous and disabled by default.
 - A manually configured upsell and optional downsell with three placements:
   full-page before checkout, passive inline before Place Order, or after purchase.
-  Each offer has its own real discount and countdown duration.
+  Each offer has its own real discount and countdown duration. Decisions apply to
+  the current cart and offer configuration for guests and signed-in shoppers;
+  changed carts or offers are reconsidered. The focused offer card inherits Purple styling.
 - Post-purchase acceptance starts a separate checkout and order; it never mutates
   or silently recharges the completed order.
 - Accepted offers are added once, priced securely in the WooCommerce cart, and
@@ -211,3 +224,13 @@ and field performance monitoring remain hosting and deployment responsibilities.
 For this local project, every approved iteration is installed and verified on
 `purple-optimize.test`; a repository change alone is not treated as the completed
 iteration.
+
+## Demo checkout reassurance content
+
+`examples/checkout-reassurance.blocks.html` contains editable core blocks for the
+companion's helpful checkout content panel: a slogan, a visibly labelled fictional
+demo review, and three reassurance rows with inline CSS icons. Paste it into the
+content editor's code view, then return to the visual editor to edit the copy.
+The contact link uses `/contact/`; adjust it for the destination store. Replace
+the demo review with an approved real review before using it on a live store.
+This example does not create a site-specific post or change merchant settings.

@@ -7,6 +7,7 @@ defined( 'ABSPATH' ) || exit;
 					<th scope="row"><label for="pot-offer-enabled"><?php esc_html_e( 'Enable upsell / downsell', 'purple-optimize-toolkit' ); ?></label></th>
 					<td>
 						<label><input type="checkbox" id="pot-offer-enabled" name="pot_settings[offer_funnel]" value="1" <?php checked( ! empty( $settings['offer_funnel'] ) ); ?> aria-describedby="pot-offer-toggle-help pot-offer-toggle-status"> <?php esc_html_e( 'Show upsell and downsell offers', 'purple-optimize-toolkit' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Accepted or declined offers do not repeat for an unchanged cart and offer configuration. Changed carts or offers are reconsidered for guests and signed-in shoppers. Products already in the cart are not offered again.', 'purple-optimize-toolkit' ); ?></p>
 						<p class="description" id="pot-offer-toggle-help"><?php esc_html_e( 'Saves immediately when switched on or off. Applies to all offer placements; your products, discounts, and checkout add-ons stay unchanged.', 'purple-optimize-toolkit' ); ?></p>
 						<p id="pot-offer-toggle-status" role="status" aria-live="polite"><?php echo esc_html( ! empty( $settings['offer_funnel'] ) ? __( 'Enabled', 'purple-optimize-toolkit' ) : __( 'Disabled', 'purple-optimize-toolkit' ) ); ?></p>
 						<noscript><p><?php esc_html_e( 'JavaScript is unavailable. Use Save Changes below to save this checkbox.', 'purple-optimize-toolkit' ); ?></p></noscript>

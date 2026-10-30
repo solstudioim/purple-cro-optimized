@@ -39,3 +39,13 @@ test('checkout configuration remains independent and safely editable', () => {
 	assert.match(php, /'display_context' => 'cart'/);
 	assert.doesNotMatch(php, /set_price\(|update_post_meta\(|wp_insert_post\(/);
 });
+
+
+test('checkout registers extension components before the frontend hydration entrypoint', () => {
+ assert.match(php, /woocommerce_blocks_checkout_block_registration/);
+ const integration = read('includes/class-checkout-integration.php');
+ assert.match(integration, /implements \\Automattic\\WooCommerce\\Blocks\\Integrations\\IntegrationInterface/);
+ assert.match(integration, /pot_register_checkout_assets\(\)/);
+ assert.match(integration, /get_script_handles/);
+ assert.match(integration, /array\( 'pot-checkout-extras' \)/);
+});

@@ -48,114 +48,31 @@ test('README identifies the toolkit admin menu and access requirements', () => {
 	assert.match(readme, /manage_woocommerce/);
 });
 
-test('the child theme owns every primary commerce template', () => {
-	for (const template of ['front-page.html', 'archive-product.html', 'single-product.html', 'page-cart.html', 'page-checkout.html']) {
-		assert.ok(fs.existsSync(path.join(theme, 'templates', template)), `Missing ${template}`);
-	}
+test('child inherits all parent templates, parts and patterns', () => {
+ for (const directory of ['templates', 'parts', 'patterns']) assert.equal(fs.existsSync(path.join(theme, directory)), false);
+ assert.deepEqual(JSON.parse(read('theme.json')), { $schema: 'https://schemas.wp.org/trunk/theme.json', version: 3 });
+ assert.doesNotMatch(read('functions.php'), /wp_enqueue_style|render_block/);
 });
 
-test('homepage follows the approved conversion sequence', () => {
-	const homepage = read('patterns/storefront-home.php');
-	const sequence = ['pot-home-hero', 'pot-trust-strip', 'pot-category-discovery', 'pot-featured-products', 'pot-brand-story', 'pot-product-proof', 'pot-home-faq'];
-	let position = -1;
-	for (const className of sequence) {
-		const next = homepage.indexOf(`class=\"wp-block-group alignwide ${className}`) >= 0
-			? homepage.indexOf(`class=\"wp-block-group alignwide ${className}`)
-			: homepage.indexOf(`class=\"wp-block-group alignfull ${className}`);
-		assert.ok(next > position, `${className} must appear in the approved order`);
-		position = next;
-	}
+test('native notices and merchant navigation are preserved', () => {
+ assert.doesNotMatch(toolkitJs, /setupSingleProductCartConfirmationCleanup|notice\.remove\(/);
+ assert.doesNotMatch(toolkitPhp, /pot_resolve_placeholder_navigation|pot_render_placeholder_navigation/);
 });
 
-test('product story uses one native purchase surface and contextual anchors', () => {
-	const singleProduct = read('templates/single-product.html');
-	const productStory = read('patterns/product-story.php');
-	assert.match(singleProduct, /pot-product-decision/);
-	assert.match(singleProduct, /purple-optimize\/product-story/);
-	assert.equal((singleProduct.match(/woocommerce\/add-to-cart-with-options/g) || []).length, 1);
-	assert.match(productStory, /pot-return-to-buy-box/);
-	assert.doesNotMatch(productStory, /currently viewing|people viewing|best seller/i);
+test('CRO defaults preserve functionality while merchant opt-outs remain possible', () => {
+ const defaults = toolkitPhp.slice(toolkitPhp.indexOf('function pot_defaults'), toolkitPhp.indexOf('function pot_settings'));
+ for (const key of ['promo_enabled', 'instant_search', 'category_navigation', 'checkout_trust', 'footer_policies', 'post_purchase_account', 'wishlist', 'sticky_cart', 'mobile_sticky_checkout', 'sale_percentage', 'product_guidance', 'checkout_labels']) {
+  assert.match(defaults, new RegExp(`'${key}'\\s*=>\\s*1\\b`), key);
+ }
+ assert.match(defaults, /'free_shipping_threshold'\s*=>\s*75/);
+ for (const key of ['recent_sales','social_proof_show_names','offer_funnel']) assert.match(defaults, new RegExp(`'${key}'\\s*=>\\s*0\\b`));
+ assert.match(toolkitPhp, /wp_parse_args\( get_option\( 'pot_settings'/);
+ assert.match(toolkitPhp, /in_array\( true, pot_frontend_feature_flags/);
 });
 
-test('mini-cart opens after the native product form adds an item', () => {
-	const header = read('parts/header.html');
-	assert.match(header, /wp:woocommerce\/mini-cart \{"addToCartBehaviour":"open_drawer"\}/);
-});
-
-test('comparison content is neutral and maintainable', () => {
-	const comparison = read('patterns/product-comparison.php');
-	assert.match(comparison, /Last reviewed/);
-	assert.match(comparison, /This product/);
-	assert.match(comparison, /Alternative/);
-	assert.doesNotMatch(comparison, /Purovitalis|Human Tonik|AG1/i);
-});
-
-test('cart and checkout keep one native transactional content surface', () => {
-	const cart = read('templates/page-cart.html');
-	const checkout = read('templates/page-checkout.html');
-	assert.match(cart, /pot-cart-layout/);
-	assert.match(checkout, /pot-checkout-layout/);
-	assert.equal((cart.match(/wp:post-content/g) || []).length, 1);
-	assert.equal((checkout.match(/wp:post-content/g) || []).length, 1);
-	assert.doesNotMatch(checkout, /template-part \{\"slug\":\"footer\"/);
-});
-
-test('catalog navigation follows the parent Purple wide container', () => {
-	const catalog = read('templates/archive-product.html');
-	assert.match(catalog, /wp:group \{"align":"wide","className":"pot-catalog-intro","layout":\{"type":"constrained"\}\}/);
-	const intro = catalog.match(/pot-catalog-intro[\s\S]*?<!-- \/wp:group -->/u)?.[0] || '';
-	assert.match(intro, /wp:woocommerce\/breadcrumbs/);
-	assert.match(intro, /pot-catalog-heading/);
-});
-
-test('return-to-buy-box links enhance native anchors without submitting a duplicate form', () => {
-	assert.match(toolkitJs, /function setupReturnToBuyBox\(\)/);
-	assert.match(toolkitJs, /querySelectorAll\('\.pot-return-to-buy-box'\)/);
-	assert.match(toolkitJs, /querySelector\('#pot-product-buy-box'\)/);
-	assert.doesNotMatch(toolkitJs, /pot-return-to-buy-box[\s\S]{0,400}\.click\(\)/);
-	assert.match(toolkitJs, /setupReturnToBuyBox\(\);/);
-});
-
-test('mobile sticky cart announces and animates successful additions', () => {
-	assert.match(toolkitJs, /matchMedia\('\(max-width: 782px\)'\)/);
-	assert.match(toolkitJs, /wc-blocks_added_to_cart/);
-	assert.match(toolkitJs, /added_to_cart/);
-	assert.match(toolkitJs, /pot-cart-flyer/);
-	assert.match(toolkitJs, /aria-live/);
-	assert.match(toolkitJs, /is-added/);
-	assert.match(toolkitJs, /prefers-reduced-motion: reduce/);
-});
-
-test('single product removes redundant inline cart actions when the mini-cart opens', () => {
-	assert.match(toolkitJs, /function setupSingleProductCartConfirmationCleanup\(\)/);
-	assert.match(toolkitJs, /function removeRedundantProductCartConfirmations\(\)/);
-	assert.match(toolkitJs, /\.wp-block-woocommerce-add-to-cart-with-options \.added_to_cart\.wc-forward/);
-	assert.match(toolkitJs, /\.pot-view-cart-link/);
-	assert.match(toolkitJs, /\.wc-block-components-notice-banner\.is-success/);
-	assert.match(toolkitJs, /querySelector\('\.wc-forward'\)/);
-	assert.match(toolkitJs, /notice\.remove\(\)/);
-	assert.doesNotMatch(toolkitJs, /container\.append\(link\)/);
-});
-
-test('footer navigation groups contain distinct theme-owned links', () => {
-	const footer = read('parts/footer.html');
-	const links = [
-		['Shop all', '/shop/'],
-		['Knitwear', '/product-category/knitwear/'],
-		['Accessories', '/product-category/accessories/'],
-		['Wishlist', '/wishlist/'],
-		['FAQs', '/faqs/'],
-		['Shipping & Returns', '/shipping-returns/'],
-		['Contact Us', '/contact/'],
-		['My Account', '/my-account/'],
-		['About Us', '/about/'],
-		['Privacy Policy', '/privacy-policy/'],
-		['Terms & Conditions', '/terms-conditions/'],
-	];
-	assert.equal((footer.match(/<!-- wp:navigation \{/g) || []).length, 3);
-	assert.doesNotMatch(footer, /<!-- wp:navigation \{[^\n]+\/-->/);
-	for (const [label, url] of links) {
-		assert.equal((footer.match(new RegExp(`"label":"${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g')) || []).length, 1, `${label} must appear once`);
-		assert.match(footer, new RegExp(`"url":"${url.replaceAll('/', '\\/')}"`));
-	}
+test('mobile sticky cart enhances the native WooCommerce purchase action', () => {
+ assert.match(toolkitJs, /wc-blocks_added_to_cart/);
+ assert.match(toolkitJs, /prefers-reduced-motion: reduce/);
+ assert.match(toolkitJs, /aria-live/);
+ assert.match(toolkitPhp, /wp-element-button/);
 });

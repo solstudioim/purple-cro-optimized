@@ -10,13 +10,19 @@ const fixture = JSON.parse(wp('echo wp_json_encode(get_option("pot_checkout_test
 const site = wp('echo home_url();');
 assert.match(new URL(site).hostname, /(^localhost$|^127\.0\.0\.1$|\.(test|localhost)$)/);
 assert.equal(fixture.products.length, 5);
-const artifacts = (process.env.POT_ARTIFACTS || '/Users/sol/Codex/artifacts/purple-companion-revamp/checkout-extras/');
+const artifacts = (process.env.POT_ARTIFACTS || '/Users/sol/Codex/artifacts/purple-companion-revamp/checkout-extras/').replace(/\/?$/, '/');
 await mkdir(artifacts, { recursive: true });
 console.log('Fixtures loaded; launching browser.');
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
 const page = await context.newPage();
 page.setDefaultTimeout(15000);
+if (process.env.POT_DELAY_CHECKOUT_EXTRAS) {
+	await page.route('**/checkout-extras.js?*', async (route) => {
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+		await route.continue();
+	});
+}
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
@@ -34,6 +40,14 @@ try {
 		await Promise.all([page.waitForURL((url) => url.href !== previous, { waitUntil: 'domcontentloaded' }), page.locator('.pot-offer-reject').click()]);
 	}
 	console.log('Checkout page loaded:', page.url());
+	const delivery = await page.evaluate(() => {
+		const scripts = [...document.scripts];
+		const companion = scripts.findIndex(script => script.id === 'pot-checkout-extras-js');
+		const checkout = scripts.findIndex(script => script.id === 'wc-checkout-block-frontend-js');
+		return { companion, checkout, companionDeferred: scripts[companion]?.defer, checkoutDeferred: scripts[checkout]?.defer };
+	});
+	assert.ok(delivery.companion >= 0 && delivery.checkout > delivery.companion, 'Companion registration must precede checkout startup.');
+	assert.ok(!delivery.companionDeferred || delivery.checkoutDeferred, 'A blocking checkout must not outrun deferred companion registration.');
 	await page.locator('.pot-checkout-upsell').first().waitFor();
 	assert.equal(await page.locator('.pot-checkout-upsell').count(), 4);
 	assert.equal(await page.locator('.pot-checkout-content').count(), 1);
@@ -68,6 +82,8 @@ try {
 	cart = await cartState();
 	assert.equal(cart.totals.total_items, '11500');
 	assert.equal(cart.items.length, 2);
+	await page.waitForFunction(() => !wp.data.select(wc.wcBlocksData.CART_STORE_KEY).isCartDataStale());
+	await page.waitForLoadState('networkidle');
 	await page.evaluate(() => window.scrollTo(0, 0));
 	await page.screenshot({ path: `${artifacts}desktop.png`, fullPage: true });
 	await page.setViewportSize({ width: 390, height: 844 });

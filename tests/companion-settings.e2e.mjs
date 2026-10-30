@@ -75,13 +75,14 @@ try {
 	shop = await guest.newPage();
 	shop.on('pageerror', (error) => errors.push(error.message));
 	await shop.goto(site);
-	await shop.locator('.pot-site-header').waitFor();
+	await shop.locator('header.wp-block-template-part').waitFor();
 	await shop.screenshot({ path: `${artifacts}/home-desktop.png`, fullPage: true });
 	const productUrl = wp('$p=wc_get_products(array("type"=>"simple","status"=>"publish","limit"=>1))[0]; echo get_permalink($p->get_id());');
 	await shop.goto(productUrl);
-	await shop.locator('.pot-product-buy-box').waitFor();
+	await shop.locator('.wp-block-woocommerce-add-to-cart-with-options').waitFor();
 	const add = shop.locator('.wp-block-woocommerce-add-to-cart-with-options .wp-block-woocommerce-product-button button').first();
 	await add.click();
+	await shop.locator('.wc-block-mini-cart__button').click();
 	await shop.locator('.wc-block-mini-cart__drawer').waitFor({ state: 'visible' });
 	await shop.locator('.wc-block-mini-cart__drawer .wc-block-components-product-name:visible').first().waitFor({ state: 'visible' });
 	await shop.goto(`${site}/cart/`);
