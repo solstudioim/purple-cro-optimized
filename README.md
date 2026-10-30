@@ -16,7 +16,7 @@ The project is deliberately split into two packages:
 - `wp-content/plugins/purple-optimize-toolkit`: optional store functionality.
 
 The child theme is built on the
-[Woo Purple parent theme](https://github.com/woocommerce/woo-themes/tree/trunk/purple),
+[Woo Purple parent theme](https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple),
 created by Automattic and distributed under GPLv2 or later. The canonical
 upstream source used for local development is vendored at
 `wp-content/themes/purple` from `woocommerce/woo-themes` (`trunk/purple`).
