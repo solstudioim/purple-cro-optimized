@@ -5,7 +5,7 @@ on Woo's Purple block theme. It preserves the parent's appearance and adds optio
 
 **Current child-theme release:** `0.6.0`
 
-**Current toolkit release:** `0.11.4`
+**Current toolkit release:** `0.11.5`
 
 **Historical demo (previous custom design):** https://purplecrodemo.wpcomstaging.com/
 
@@ -31,7 +31,11 @@ The existing CRO feature defaults and saved settings are preserved. Offers and
 checkout add-ons still require explicit product configuration; recent-purchase proof remains off.
 Updating the theme files does not replace templates saved in the Site Editor.
 
-## Local preview: 0.6.0 / 0.11.4 (unreleased)
+## Local preview: 0.6.0 / 0.11.5 (unreleased)
+
+Toolkit 0.11.5 restores the native cart drawer opening after add to cart when the
+child theme’s mini-cart has no saved behavior choice. Explicit block choices are
+preserved, and the parent header, templates and CSS remain inherited.
 
 Upload the child ZIP and toolkit ZIP separately on a test site, then activate both.
 The future GitHub installer asset for this preview has not been published; use the

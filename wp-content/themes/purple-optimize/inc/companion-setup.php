@@ -63,7 +63,7 @@ function purple_optimize_setup_page(): void {
 	$installed = isset( get_plugins()[ $file ] );
 	$active    = is_plugin_active( $file );
 	$checks    = purple_optimize_environment_checks();
-	$toolkit_ok = ! $installed || version_compare( get_plugins()[ $file ]['Version'], '0.11.4', '>=' );
+	$toolkit_ok = ! $installed || version_compare( get_plugins()[ $file ]['Version'], '0.11.5', '>=' );
 	$ready     = purple_optimize_environment_ready( $checks );
 	?>
 	<div class="wrap"><h1><?php esc_html_e( 'Purple Optimize setup', 'purple-optimize' ); ?></h1>
@@ -77,10 +77,10 @@ function purple_optimize_setup_page(): void {
 	<?php foreach ( $checks as $check ) : ?>
 	<tr><th><?php echo esc_html( $check['label'] ); ?></th><td><?php echo esc_html( $check['version'] ?: __( 'Not active', 'purple-optimize' ) ); ?></td><td><?php echo esc_html( $check['minimum'] . ( false === ( $check['required'] ?? true ) ? __( ' (recommended)', 'purple-optimize' ) : '' ) ); ?></td><td><?php echo esc_html( $check['ok'] ? __( 'Meets minimum', 'purple-optimize' ) : ( false === ( $check['required'] ?? true ) ? __( 'Older parent — testing allowed', 'purple-optimize' ) : __( 'Needs attention', 'purple-optimize' ) ) ); ?></td></tr>
 	<?php endforeach; ?>
-	<tr><th><?php esc_html_e( 'Companion toolkit', 'purple-optimize' ); ?></th><td><?php echo esc_html( $installed ? get_plugins()[ $file ]['Version'] : __( 'Not installed', 'purple-optimize' ) ); ?></td><td>0.11.4</td><td><?php echo esc_html( ! $toolkit_ok ? __( 'Update needed', 'purple-optimize' ) : ( $active ? __( 'Active', 'purple-optimize' ) : __( 'Optional setup', 'purple-optimize' ) ) ); ?></td></tr>
+	<tr><th><?php esc_html_e( 'Companion toolkit', 'purple-optimize' ); ?></th><td><?php echo esc_html( $installed ? get_plugins()[ $file ]['Version'] : __( 'Not installed', 'purple-optimize' ) ); ?></td><td>0.11.5</td><td><?php echo esc_html( ! $toolkit_ok ? __( 'Update needed', 'purple-optimize' ) : ( $active ? __( 'Active', 'purple-optimize' ) : __( 'Optional setup', 'purple-optimize' ) ) ); ?></td></tr>
 	</tbody></table>
 	<h2><?php esc_html_e( 'Companion toolkit', 'purple-optimize' ); ?></h2>
-	<?php if ( ! $toolkit_ok ) : ?><p class="notice notice-warning inline"><?php esc_html_e( 'Update the installed toolkit to 0.11.4 or newer using its ZIP before continuing. Your settings will be kept.', 'purple-optimize' ); ?></p>
+	<?php if ( ! $toolkit_ok ) : ?><p class="notice notice-warning inline"><?php esc_html_e( 'Update the installed toolkit to 0.11.5 or newer using its ZIP before continuing. Your settings will be kept.', 'purple-optimize' ); ?></p>
 	<?php elseif ( $active ) : ?>
 	<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=purple-optimize' ) ); ?>"><?php esc_html_e( 'Open toolkit settings', 'purple-optimize' ); ?></a></p>
 	<?php elseif ( $ready && current_user_can( 'activate_plugins' ) && ( $installed || current_user_can( 'install_plugins' ) ) && ! is_multisite() ) : ?>
@@ -122,7 +122,7 @@ function purple_optimize_setup_companion(): void {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 		$skin     = new WP_Ajax_Upgrader_Skin();
 		$upgrader = new Plugin_Upgrader( $skin );
-		$result   = $upgrader->install( 'https://github.com/solstudioim/purple-cro-optimized/releases/download/v0.6.0/purple-optimize-toolkit-0.11.4.zip' );
+		$result   = $upgrader->install( 'https://github.com/solstudioim/purple-cro-optimized/releases/download/v0.6.0/purple-optimize-toolkit-0.11.5.zip' );
 		if ( is_wp_error( $result ) || ! $result || is_wp_error( $skin->result ) || $skin->get_errors()->has_errors() ) {
 			wp_safe_redirect( add_query_arg( 'setup_error', __( 'Installation could not finish. Check that the GitHub release package exists, retry, or upload the toolkit ZIP using Plugins → Add New.', 'purple-optimize' ), $redirect ) );
 			exit;
@@ -130,8 +130,8 @@ function purple_optimize_setup_companion(): void {
 		wp_clean_plugins_cache();
 	}
 	$plugins = get_plugins();
-	if ( isset( $plugins[ $file ] ) && version_compare( $plugins[ $file ]['Version'], '0.11.4', '<' ) ) {
-		wp_safe_redirect( add_query_arg( 'setup_error', __( 'Update the installed toolkit ZIP to 0.11.4 or newer before activation.', 'purple-optimize' ), $redirect ) );
+	if ( isset( $plugins[ $file ] ) && version_compare( $plugins[ $file ]['Version'], '0.11.5', '<' ) ) {
+		wp_safe_redirect( add_query_arg( 'setup_error', __( 'Update the installed toolkit ZIP to 0.11.5 or newer before activation.', 'purple-optimize' ), $redirect ) );
 		exit;
 	}
 	$result = activate_plugin( $file );

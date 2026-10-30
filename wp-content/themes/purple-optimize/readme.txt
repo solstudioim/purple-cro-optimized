@@ -41,7 +41,7 @@ https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 = 0.6.0 (local preview) =
 * Inherit parent templates and styling without child overrides.
-* Pair with toolkit 0.11.4 for functional conversion elements styled with parent tokens.
+* Pair with toolkit 0.11.5 for functional conversion elements styled with parent tokens.
 * Keep older Purple versions advisory so testing remains possible.
 
 = 0.5.14 =

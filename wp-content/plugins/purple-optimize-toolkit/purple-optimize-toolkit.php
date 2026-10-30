@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.11.4
+ * Version: 0.11.5
  * Requires at least: 7.1
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.11.4' );
+define( 'POT_VERSION', '0.11.5' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -547,6 +547,25 @@ function pot_promotion_strip(): void {
 	<?php
 }
 add_action( 'wp_body_open', 'pot_promotion_strip', 5 );
+
+/**
+ * Preserve the child's native cart-drawer behavior without replacing the header.
+ *
+ * Run before WooCommerce supplies block defaults so an explicit merchant choice,
+ * including "none", takes precedence.
+ *
+ * @param array $block Parsed block before default attributes are applied.
+ * @return array Parsed block with a default mini-cart behavior.
+ */
+function pot_default_mini_cart_behavior( array $block ): array {
+	if ( 'purple-optimize' === get_stylesheet()
+		&& 'woocommerce/mini-cart' === ( $block['blockName'] ?? '' )
+		&& ! array_key_exists( 'addToCartBehaviour', $block['attrs'] ?? array() ) ) {
+		$block['attrs']['addToCartBehaviour'] = 'open_drawer';
+	}
+	return $block;
+}
+add_filter( 'render_block_data', 'pot_default_mini_cart_behavior' );
 
 /**
  * Add wishlist access beside the parent's existing mini-cart control.

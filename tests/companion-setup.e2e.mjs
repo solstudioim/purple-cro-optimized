@@ -26,7 +26,7 @@ const zipBase64 = Buffer.from(fixtureZip).toString('base64');
 writeFileSync(fixturePath, `<?php
 // Test-only: exercise WordPress's real ZIP installer using a local release package.
 add_filter('upgrader_pre_download', static function($reply,$package){
- if ($package !== 'https://github.com/solstudioim/purple-cro-optimized/releases/download/v0.6.0/purple-optimize-toolkit-0.11.4.zip') return $reply;
+ if ($package !== 'https://github.com/solstudioim/purple-cro-optimized/releases/download/v0.6.0/purple-optimize-toolkit-0.11.5.zip') return $reply;
  if (!get_option('pot_setup_fixture_allow')) return new WP_Error('simulated_unavailable','Test package unavailable');
  return base64_decode('${zipBase64}');
 },10,2);
@@ -87,9 +87,9 @@ try {
 	// An outdated installed copy is never overwritten or activated by setup.
 	wp('deactivate_plugins("purple-optimize-toolkit/purple-optimize-toolkit.php");');
 	const mainFile = path.join(pluginPath, 'purple-optimize-toolkit.php');
-	writeFileSync(mainFile, readFileSync(mainFile, 'utf8').replace('Version: 0.11.4', 'Version: 0.9.0'));
+	writeFileSync(mainFile, readFileSync(mainFile, 'utf8').replace('Version: 0.11.5', 'Version: 0.9.0'));
 	await page.goto(setup);
-	await page.getByText(/Update the installed toolkit to 0.11.4/).waitFor();
+	await page.getByText(/Update the installed toolkit to 0.11.5/).waitFor();
 	assert.equal(await page.getByRole('button', { name: 'Activate companion toolkit', exact: true }).count(), 0);
 	// The screen deliberately offers upload rather than activation for an old copy.
 	assert.equal(wp('echo is_plugin_active("purple-optimize-toolkit/purple-optimize-toolkit.php") ? "yes" : "no";'), 'no');
