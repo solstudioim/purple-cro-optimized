@@ -1,9 +1,9 @@
 === Purple Optimize ===
 Contributors: solstudioim
-Requires at least: 7.0
-Tested up to: 7.0
+Requires at least: 7.1
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.5.12
+Stable tag: 0.5.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,13 +21,13 @@ with this theme.
 
 == Installation ==
 
-1. Install the Purple parent theme from the upstream Woo Themes repository.
+1. Install the Purple parent theme from the upstream WooCommerce repository.
 2. Install the Purple Optimize theme ZIP.
 3. Activate Purple Optimize under Appearance > Themes.
-4. Install and activate WooCommerce for the commerce templates and blocks.
+4. Use WordPress 7.1+, PHP 7.4+, and WooCommerce 11.1+ for the commerce templates and blocks.
 
 Parent theme source:
-https://github.com/woocommerce/woo-themes/tree/trunk/purple
+https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 == Frequently Asked Questions ==
 
@@ -39,11 +39,23 @@ only and requires the Purple parent theme.
 = Where is the original Purple theme maintained? =
 
 Automattic maintains Purple in Woo's public theme repository:
-https://github.com/woocommerce/woo-themes/tree/trunk/purple
+https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 == Changelog ==
 
-= 0.5.12 =
+= 0.5.14 =
+* Add explicit companion setup and automatic local version checks.
+* Preserve the native desktop checkout button and fit longer mobile store titles.
+
+* Align with Purple 1.0.3 from the WooCommerce monorepo.
+* Follow the parent navigation overlay and product gallery controls.
+* Require WordPress 7.1 and recommend WooCommerce 11.1 or newer.
+
+
+= 0.5.14 =
+* Add explicit companion setup and automatic local version checks.
+* Preserve the native desktop checkout button and fit longer mobile store titles.
+
 * Added WordPress.org release metadata, documentation, and upstream attribution.
 * Documented the separate parent-theme and plugin dependencies.
 
@@ -58,7 +70,7 @@ Purple Optimize is distributed under the terms of the GNU GPL.
 
 Based on Purple WordPress Theme, (C) 2026 Automattic
 Purple is distributed under the terms of the GNU GPL.
-Source: https://github.com/woocommerce/woo-themes/tree/trunk/purple
+Source: https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 Theme screenshot
 Author: Sol Studio

@@ -4,10 +4,11 @@ Theme URI: https://github.com/solstudioim/purple-cro-optimized
 Author: Sol Studio
 Author URI: https://github.com/solstudioim
 Description: A conversion-focused child theme for Woo's Purple block theme.
-Requires at least: 7.0
-Tested up to: 7.0
+Requires at least: 7.1
+Tested up to: 7.1
 Requires PHP: 7.4
-Version: 0.5.12
+WC requires at least: 11.1
+Version: 0.5.14
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Template: purple
@@ -351,4 +352,25 @@ body.pot-enclosed-checkout header.wp-block-template-part .wp-block-site-title { 
 @media (prefers-reduced-motion: reduce) {
 	html { scroll-behavior: auto; }
 	*, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Keep the native cart action visible when Woo marks its container sticky on desktop. */
+@media (min-width: 783px) {
+	.woocommerce-cart .pot-cart-layout .wc-block-cart__submit-container--sticky {
+		display: block;
+	}
+}
+
+/* Leave room for account, cart and menu controls beside longer mobile store titles. */
+@media (max-width: 520px) {
+	.pot-header-inner { gap: 0.75rem; }
+	.pot-brand-lockup { flex: 1 1 auto; min-width: 0; }
+	.pot-brand-lockup .wp-block-site-title { font-size: 0.95rem; white-space: normal; overflow-wrap: anywhere; }
+	.pot-header-tools, .pot-primary-navigation { flex-shrink: 0; }
+}
+
+/* A full-width parent pattern inside the child's padded FAQ stays within its section. */
+.pot-home-faq > .alignfull {
+	margin-left: 0;
+	margin-right: 0;
 }

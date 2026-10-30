@@ -138,3 +138,7 @@ test('checkout help and security labels cannot overlap', () => {
 	assert.match(themeCss, /@media \(max-width:\s*520px\)[\s\S]*\.pot-checkout-help\s*\{[^}]*display:\s*none/);
 	assert.match(themeCss, /@media \(max-width:\s*520px\)[\s\S]*\.pot-secure-checkout\s*\{[^}]*margin-right:\s*0/);
 });
+
+test('the native desktop cart action remains visible in WooCommerce sticky-container state', () => {
+	assert.match(themeCss, /@media\s*\(min-width:\s*783px\)\s*\{\s*\.woocommerce-cart \.pot-cart-layout \.wc-block-cart__submit-container--sticky\s*\{\s*display:\s*block;/);
+});

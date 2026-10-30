@@ -5,11 +5,11 @@ import { mkdir } from 'node:fs/promises';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = process.env.POT_WP_PATH;
 assert.ok(root, 'Set POT_WP_PATH to a local WordPress install.');
-const wp = (code, input) => execFileSync('/opt/homebrew/opt/php@8.1/bin/php', ['/usr/local/bin/wp', 'eval', code, `--path=${root}`], { encoding: 'utf8', input }).trim();
+const wp = (code, input) => execFileSync(process.env.POT_PHP || 'php', ['-d', 'error_reporting=22527', '/usr/local/bin/wp', 'eval', code, `--path=${root}`], { encoding: 'utf8', input }).trim();
 const site = wp('echo home_url();');
-assert.match(new URL(site).hostname, /\.(test|localhost)$/);
+assert.match(new URL(site).hostname, /(^localhost$|^127\.0\.0\.1$|\.(test|localhost)$)/);
 const original = JSON.parse(wp('echo wp_json_encode(array("id"=>get_option("pot_checkout_content_id",false),"extras"=>get_option("pot_checkout_settings",false)));'));
-const out = new URL('../artifacts/checkout-block-editor/', import.meta.url).pathname;
+const out = (process.env.POT_ARTIFACTS || '/Users/sol/Codex/artifacts/purple-companion-revamp/checkout-block-editor/');
 await mkdir(out, { recursive: true });
 let auth, id;
 const browser = await chromium.launch({ headless: true });
@@ -20,7 +20,7 @@ try {
 	await admin.addCookies([{ name: auth.name, value: auth.cookie, url: site }, { name: auth.adminName, value: auth.adminCookie, url: site }]);
 	const page = await admin.newPage();
 	page.setDefaultTimeout(20000);
-	await page.goto(`${site}/wp-admin/admin.php?page=purple-optimize`, { waitUntil: 'domcontentloaded' });
+	await page.goto(`${site}/wp-admin/admin.php?page=purple-optimize&section=checkout`, { waitUntil: 'domcontentloaded' });
 	assert.equal(await page.locator('#pot_checkout_content').count(), 0, 'Old rich-text editor removed.');
 	const invalid = await admin.request.get(`${site}/wp-admin/admin-post.php?action=pot_edit_checkout_content&_wpnonce=invalid`);
 	assert.equal(invalid.status(), 403);
@@ -92,7 +92,7 @@ try {
 	await panel.screenshot({ path: `${out}/checkout-mobile.png` });
 	// Settings save must preserve both the legacy backup and the published document.
 	const source = wp('echo hash("sha256",pot_checkout_content_source());');
-	await page.goto(`${site}/wp-admin/admin.php?page=purple-optimize`, { waitUntil: 'domcontentloaded' });
+	await page.goto(`${site}/wp-admin/admin.php?page=purple-optimize&section=checkout`, { waitUntil: 'domcontentloaded' });
 	await page.locator('[name="pot_checkout_settings[content_enabled]"]').uncheck();
 	await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.locator('#pot-checkout-settings input[type="submit"]').click()]);
 	assert.equal(wp('echo hash("sha256",pot_checkout_content_source());'), source);

@@ -49,3 +49,6 @@ function purple_optimize_lazy_gallery_images( string $block_content ): string {
 	return $processor->get_updated_html();
 }
 add_filter( 'render_block_woocommerce/product-gallery', 'purple_optimize_lazy_gallery_images' );
+
+// Keep companion setup available before the optional plugin is installed.
+require_once get_stylesheet_directory() . '/inc/companion-setup.php';

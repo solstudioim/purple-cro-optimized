@@ -32,7 +32,7 @@ test('demo page exposes an accessible non-autoplay video', () => {
 
 test('demo page links the project and canonical Woo Purple source', () => {
   assert.match(page, /https:\/\/github\.com\/solstudioim\/purple-cro-optimized/);
-  assert.match(page, /https:\/\/github\.com\/woocommerce\/woo-themes\/tree\/trunk\/purple/);
+  assert.match(page, /https:\/\/github\.com\/woocommerce\/woocommerce\/tree\/trunk\/themes\/purple/);
   assert.doesNotMatch(page, /WordPress\.com repository/i);
 });
 

@@ -3,7 +3,7 @@
  * Local WP-CLI integration tests; fixtures are restored/removed after the run.
  * Run: wp eval-file tests/checkout-extras-integration.php [prepare|cleanup].
  */
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! preg_match( '/\.(test|localhost)$/', wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! preg_match( '/(^localhost$|^127\.0\.0\.1$|\.(test|localhost)$)/', wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
 	throw new RuntimeException( 'Run only against a local .test/.localhost WordPress installation.' );
 }
 

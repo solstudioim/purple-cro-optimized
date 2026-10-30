@@ -120,7 +120,7 @@ function pot_render_checkout_settings(): void {
 	</form>
 	<?php
 }
-add_action( 'pot_after_settings_form', 'pot_render_checkout_settings' );
+// Rendered explicitly in the Cart & checkout workspace section.
 
 /**
  * Find all cart lines for a product, without touching unrelated cart items.

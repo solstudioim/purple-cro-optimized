@@ -1,9 +1,9 @@
 === Purple ===
 Contributors: Automattic
-Requires at least: 7.0
-Tested up to: 7.0
-Requires PHP: 7.2
-Stable tag: 1.0.0
+Requires at least: 7.1
+Tested up to: 7.1
+Requires PHP: 7.4
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,9 +11,40 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Purple is a WooCommerce starter theme made for the Site Editor and modern commerce. Its clean styles and adaptable color system suit any catalog: fashion and clothing, jewelry, beauty, home decor, food and drink, or digital downloads. Commerce-ready templates and curated patterns cover the storefront from product pages and filterable shop views to cart and checkout. Ten color palettes and ten font pairings make it easy to match your brand in a click, and the theme works well with Jetpack blocks, supports RTL languages, and is fully translation-ready. Whether you’re launching your first online store or refreshing an established one, Purple is a versatile foundation for selling with WordPress and WooCommerce.
 
+== Requirements ==
+
+Purple requires:
+- WordPress 7.1 or newer,
+- PHP 7.4 or newer,
+- WooCommerce 11.1 or newer.
+
+Install and activate WooCommerce before activating the theme.
+
 == Changelog ==
 
-= 1.0.0 =
+= 1.0.3 =
+* Purple: declare WooCommerce 11.2 compatibility (#476)
+
+= 1.0.2 =
+* Load fall back styles only in relevant WC versions (#460)
+* Update several instances of the Search block with Product Search (#468)
+* Purple: give palette colors semantic names (#469)
+* Make Purple WooCommerce notices permanently dismissible (#471)
+* Decrease header whitespace in several screens (#470)
+
+= 1.0.1 =
+* Remove the unregistered is-style-default class from Purple (#457)
+* Document and warn about Purple’s WooCommerce requirements (#456)
+* Use Chips blockGap support instead of hardcoded CSS (#453)
+* Small CSS cleanup (#459)
+* Purple: show active filters on mobile and tablet (outside of popover) (#458)
+* Update Purple theme screenshot (#461)
+
+= 0.0.2 =
+* Unify link underline styles (#445)
+* Prevent checkbox form items in My Account from breaking into multiple lines (#451)
+
+= 0.0.1 =
 * Initial release
 
 == Copyright ==
@@ -36,56 +67,56 @@ GNU General Public License for more details.
 == Fonts ==
 
 Crimson Pro
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Crimson+Pro
 
 Figtree
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Figtree
 
 Fraunces
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Fraunces
 
 Inter Font
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Inter
 
 Jost
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Jost
 
 Libre Baskerville
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Libre+Baskerville
 
 
 Source Serif 4
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/Source+Serif+4
 
 SUSE Mono
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://fonts.google.com/specimen/SUSE+Mono
 
 
 Uncut Sans
-License: Licensed under SIL Open Font License, 1.1 
+License: Licensed under SIL Open Font License, 1.1
 License URI: https://scripts.sil.org/OFL
 Source: https://uncut.wtf/sans-serif/uncut-sans.html
 
 
 == Images ==
 
-Theme screenshot, icon and logo images 
+Theme screenshot, icon and logo images
 Author: Beatriz Fialho
 License: CC0 1.0 Universal
 License URI: https://creativecommons.org/publicdomain/zero/1.0/

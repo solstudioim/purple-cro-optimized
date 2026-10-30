@@ -1,6 +1,6 @@
 <?php
 /** Local-only native-content regression checks; fixture documents/options are restored. */
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! preg_match( '/\.(test|localhost)$/', wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! preg_match( '/(^localhost$|^127\.0\.0\.1$|\.(test|localhost)$)/', wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
 	throw new RuntimeException( 'Run with WP-CLI on a local test site only.' );
 }
 $original_id = get_option( 'pot_checkout_content_id', false );

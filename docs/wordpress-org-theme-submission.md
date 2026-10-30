@@ -6,18 +6,19 @@ Submit only the `purple-optimize` child-theme directory. Do not include the
 Purple parent theme, Purple Optimize Toolkit, demo tools, repository metadata,
 performance captures, or environment files.
 
-Build the ZIP from a committed release:
+Build the ZIP from a committed release after creating and checking the resolved
+`/Users/sol/Codex/artifacts/purple-cro-optimized/` destination:
 
 ```sh
 git archive --format=zip \
   --prefix=purple-optimize/ \
-  -o purple-optimize-0.5.12.zip \
+  -o /Users/sol/Codex/artifacts/purple-cro-optimized/purple-optimize-0.5.14.zip \
   HEAD:wp-content/themes/purple-optimize
 ```
 
 ## Upstream and licensing
 
-- Parent: [Woo Purple](https://github.com/woocommerce/woo-themes/tree/trunk/purple)
+- Parent: [Woo Purple](https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple)
 - Parent author: Automattic
 - Parent license: GPLv2 or later
 - Child license: GPLv2 or later
@@ -39,7 +40,7 @@ git archive --format=zip \
 
 ## Confirm with the Themes Team before upload
 
-1. Purple is maintained in WooCommerce's public `woocommerce/woo-themes`
+1. Purple is maintained in WooCommerce's public `woocommerce/woocommerce`
    repository. Confirm whether the parent must be accepted into the WordPress.org
    Theme Directory first so dependency installation and review can work
    correctly.
@@ -49,3 +50,7 @@ git archive --format=zip \
 
 These are submission blockers, not packaging failures. Ask in the WordPress.org
 `#themes` Slack channel before reserving a name or uploading the ZIP.
+
+The current GitHub distribution includes an explicit companion installer. Before
+Theme Directory submission, replace that recommendation/installer with the
+approved WordPress.org plugin slug. Keep the plugin outside the child-theme ZIP.
