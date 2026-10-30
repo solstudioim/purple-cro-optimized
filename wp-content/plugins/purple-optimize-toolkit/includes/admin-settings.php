@@ -16,7 +16,7 @@ function pot_settings_sections(): array {
 		'products'   => __( 'Product pages', 'purple-optimize-toolkit' ),
 		'checkout'   => __( 'Cart & checkout', 'purple-optimize-toolkit' ),
 		'offers'     => __( 'Offers', 'purple-optimize-toolkit' ),
-		'privacy'    => __( 'Privacy', 'purple-optimize-toolkit' ),
+		'privacy'    => __( 'Social proof', 'purple-optimize-toolkit' ),
 	);
 }
 
@@ -90,7 +90,7 @@ function pot_render_overview(): void {
 	<?php if ( 'purple-optimize' !== get_stylesheet() ) : ?><p class="notice notice-warning inline"><?php esc_html_e( 'Purple Optimize is not the active theme. Toolkit settings are retained; verify storefront behavior with your active theme.', 'purple-optimize-toolkit' ); ?></p><?php endif; ?>
 	</section>
 	<section class="pot-settings-card"><h2><?php esc_html_e( 'Your setup', 'purple-optimize-toolkit' ); ?></h2><p><?php esc_html_e( 'Review the essentials first. Offers and recent-purchase proof are optional.', 'purple-optimize-toolkit' ); ?></p>
-	<?php foreach ( array( 'storefront' => __( 'Review promotion, search and policy links', 'purple-optimize-toolkit' ), 'products' => __( 'Review product guidance and purchase controls', 'purple-optimize-toolkit' ), 'checkout' => __( 'Review cart and checkout features', 'purple-optimize-toolkit' ), 'offers' => __( 'Configure optional upsell and downsell offers', 'purple-optimize-toolkit' ), 'privacy' => __( 'Review recent-purchase privacy choices', 'purple-optimize-toolkit' ) ) as $key => $label ) : ?>
+	<?php foreach ( array( 'storefront' => __( 'Review promotion, search and policy links', 'purple-optimize-toolkit' ), 'products' => __( 'Review product guidance and purchase controls', 'purple-optimize-toolkit' ), 'checkout' => __( 'Review cart and checkout features', 'purple-optimize-toolkit' ), 'offers' => __( 'Configure optional upsell and downsell offers', 'purple-optimize-toolkit' ), 'privacy' => __( 'Configure recent purchases and review testimonials', 'purple-optimize-toolkit' ) ) as $key => $label ) : ?>
 	<div class="pot-setup-row"><span><?php echo esc_html( $label ); ?></span><a class="button" href="<?php echo esc_url( pot_section_url( $key ) ); ?>"><?php esc_html_e( 'Review settings', 'purple-optimize-toolkit' ); ?></a></div>
 	<?php endforeach; ?>
 	<p class="description"><?php echo esc_html( ! empty( $settings['offer_funnel'] ) ? __( 'Offers are enabled. Review product availability before sharing your store.', 'purple-optimize-toolkit' ) : __( 'Offers are off. Enabling them is a separate choice.', 'purple-optimize-toolkit' ) ); ?></p></section>
@@ -127,7 +127,7 @@ function pot_render_workspace(): void {
 	<form method="post" action="options.php" id="pot-section-settings" data-pot-dirty-form>
 	<?php settings_fields( 'pot_settings_group' ); ?>
 	<input type="hidden" name="pot_settings_section" value="<?php echo esc_attr( $section ); ?>">
-	<section class="pot-settings-card"><h3><?php echo esc_html( $sections[ $section ] ); ?></h3><table class="form-table" role="presentation">
+	<section class="pot-settings-card"><h3><?php echo esc_html( 'privacy' === $section ? __( 'Recent purchases', 'purple-optimize-toolkit' ) : $sections[ $section ] ); ?></h3><table class="form-table" role="presentation">
 	<?php
 	switch ( $section ) {
 		case 'storefront':
@@ -167,6 +167,7 @@ function pot_render_workspace(): void {
 	</table></section>
 	<?php submit_button( __( 'Save changes', 'purple-optimize-toolkit' ) ); ?><p class="pot-save-status" role="status" aria-live="polite"></p>
 	</form>
+	<?php if ( 'privacy' === $section ) : require POT_PATH . 'includes/admin-reviews.php'; endif; ?>
 	<?php if ( 'checkout' === $section ) : ?><section class="pot-settings-card"><?php pot_render_checkout_settings(); ?></section><?php endif; ?>
 	</div>
 	<?php if ( 'offers' === $section ) : pot_render_offer_preview( $settings ); endif; ?>

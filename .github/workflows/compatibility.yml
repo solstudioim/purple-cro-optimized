@@ -63,7 +63,9 @@ jobs:
           wp theme activate purple-optimize --path="$RUNNER_TEMP/site"
           wp plugin activate purple-optimize-toolkit --path="$RUNNER_TEMP/site"
           wp eval-file tests/companion-settings-integration.php --path="$RUNNER_TEMP/site"
+          wp eval-file tests/checkout-discounts-integration.php --path="$RUNNER_TEMP/site"
           wp eval-file tests/checkout-extras-integration.php --path="$RUNNER_TEMP/site"
+          wp eval-file tests/reviews-integration.php --path="$RUNNER_TEMP/site"
           wp eval-file tests/mini-cart-integration.php --path="$RUNNER_TEMP/site"
           wp eval-file tests/wishlist-navigation-integration.php --path="$RUNNER_TEMP/site"
           wp eval-file tests/checkout-content-integration.php --path="$RUNNER_TEMP/site"
@@ -86,6 +88,7 @@ jobs:
           for attempt in $(seq 1 30); do if curl --fail --silent http://localhost:8888/wp-login.php > /dev/null; then break; fi; sleep 1; done
           node tests/companion-settings.e2e.mjs
           node tests/parent-native.e2e.mjs
+          node tests/reviews.e2e.mjs
           node tests/mini-cart.e2e.mjs
           node tests/wishlist-navigation.e2e.mjs
           node tests/storefront-alignment.e2e.mjs
@@ -93,6 +96,7 @@ jobs:
           wp eval-file tests/checkout-extras-integration.php prepare --path="$POT_WP_PATH"
           trap 'wp eval-file tests/checkout-extras-integration.php cleanup --path="$POT_WP_PATH"' EXIT
           POT_DELAY_CHECKOUT_EXTRAS=1 node tests/checkout-extras.e2e.mjs
+          node tests/checkout-discounts.e2e.mjs
           wp eval-file tests/offer-session-integration.php --path="$POT_WP_PATH"
           node tests/offer-auth.e2e.mjs
           node tests/offer-journey.e2e.mjs
@@ -100,7 +104,7 @@ jobs:
           trap - EXIT
           node tests/checkout-content.e2e.mjs
           python3 tools/build-packages.py --output "$RUNNER_TEMP/packages"
-          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.11.5.zip"
+          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.11.10.zip"
           export POT_DISPOSABLE_SITE=1
           node tests/companion-setup.e2e.mjs
       - uses: actions/upload-artifact@v4

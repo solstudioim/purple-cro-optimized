@@ -23,6 +23,38 @@ function pot_checkout_settings(): array {
 	) );
 }
 
+/** Normalize an optional percentage without interpreting malformed values as discounts. */
+function pot_checkout_discount( $value ): int {
+	return is_scalar( $value ) && is_numeric( $value ) ? max( 0, min( 100, (int) $value ) ) : 0;
+}
+
+/** Only a complete accepted price snapshot may advertise or apply a discount. */
+function pot_checkout_accepted_discount( array $item ): int {
+	if ( empty( $item['pot_checkout_upsell'] ) || ! isset( $item['pot_checkout_base_price'] ) || ! is_numeric( $item['pot_checkout_base_price'] ) || (float) $item['pot_checkout_base_price'] < 0 ) {
+		return 0;
+	}
+	return pot_checkout_discount( $item['pot_checkout_discount'] ?? '' );
+}
+
+/** Match the native cart's regular/current price comparison and currency rounding. */
+function pot_checkout_savings_details( float $regular, float $current ): array {
+	$formatter = new \Automattic\WooCommerce\StoreApi\Formatters\MoneyFormatter();
+	$args = array( 'decimals' => wc_get_price_decimals() );
+	$regular_minor = (int) $formatter->format( $regular, $args );
+	$current_minor = (int) $formatter->format( $current, $args );
+	$saved_minor = max( 0, $regular_minor - $current_minor );
+	$percentage = $regular_minor > 0 ? round( $saved_minor / $regular_minor * 100, 2 ) : 0;
+	return array(
+		'amount' => $saved_minor / ( 10 ** wc_get_price_decimals() ),
+		'percentage' => wc_format_localized_decimal( wc_format_decimal( $percentage, 2, true ) ),
+	);
+}
+
+/** Return the currency saving for consumers that do not need the percentage. */
+function pot_checkout_savings( float $regular, float $current ): float {
+	return pot_checkout_savings_details( $regular, $current )['amount'];
+}
+
 /**
  * Sanitize bounded add-on configuration and safe, media-capable rich text.
  *
@@ -50,6 +82,7 @@ function pot_sanitize_checkout_settings( $input ): array {
 		$seen[ $id ] = true;
 		$output['upsells'][] = array(
 			'product_id'  => $id,
+			'discount'    => '' === ( $row['discount'] ?? '' ) ? '' : pot_checkout_discount( $row['discount'] ),
 			'title'       => sanitize_text_field( is_string( $row['title'] ?? null ) ? $row['title'] : '' ),
 			'description' => sanitize_textarea_field( is_string( $row['description'] ?? null ) ? $row['description'] : '' ),
 		);
@@ -102,13 +135,15 @@ function pot_render_checkout_settings(): void {
 					<?php if ( $id ) : ?><option value="<?php echo esc_attr( (string) $id ); ?>" selected><?php echo esc_html( $product ? wp_strip_all_tags( $product->get_formatted_name() ) : '#' . $id ); ?></option><?php endif; ?>
 				</select>
 				<?php if ( $issue ) : ?><p class="notice notice-warning inline"><?php echo esc_html( pot_offer_product_issue_message( $issue ) ); ?></p><?php endif; ?>
+				<p><label for="pot-checkout-discount-<?php echo esc_attr( (string) $index ); ?>"><?php esc_html_e( 'Optional discount (%)', 'purple-optimize-toolkit' ); ?></label><br><input type="number" class="small-text" min="0" max="100" step="1" id="pot-checkout-discount-<?php echo esc_attr( (string) $index ); ?>" name="<?php echo esc_attr( $prefix ); ?>[discount]" value="<?php echo esc_attr( (string) ( $row['discount'] ?? '' ) ); ?>" aria-describedby="pot-checkout-discount-help-<?php echo esc_attr( (string) $index ); ?>"></p>
+				<p class="description" id="pot-checkout-discount-help-<?php echo esc_attr( (string) $index ); ?>"><?php esc_html_e( 'Leave blank or enter 0 for no extra discount. The percentage comes off the current catalog price, including any sale price, only when added here. Existing accepted add-ons keep their accepted price.', 'purple-optimize-toolkit' ); ?></p>
 				<p><label for="pot-checkout-title-<?php echo esc_attr( (string) $index ); ?>"><?php esc_html_e( 'Optional headline', 'purple-optimize-toolkit' ); ?></label><br><input class="large-text" id="pot-checkout-title-<?php echo esc_attr( (string) $index ); ?>" name="<?php echo esc_attr( $prefix ); ?>[title]" value="<?php echo esc_attr( $row['title'] ?? '' ); ?>"></p>
 				<p><label for="pot-checkout-description-<?php echo esc_attr( (string) $index ); ?>"><?php esc_html_e( 'Optional description', 'purple-optimize-toolkit' ); ?></label><br><textarea class="large-text" rows="3" id="pot-checkout-description-<?php echo esc_attr( (string) $index ); ?>" name="<?php echo esc_attr( $prefix ); ?>[description]"><?php echo esc_textarea( $row['description'] ?? '' ); ?></textarea></p>
 				<p class="description"><?php esc_html_e( 'Leave copy blank to use the product name and short description. Clear the product to remove this add-on.', 'purple-optimize-toolkit' ); ?></p>
 			</td></tr>
 			<?php endfor; ?>
 			<tr><th scope="row"><?php esc_html_e( 'Helpful checkout content', 'purple-optimize-toolkit' ); ?></th><td><label><input type="checkbox" name="pot_checkout_settings[content_enabled]" value="1" <?php checked( $settings['content_enabled'] ); ?>> <?php esc_html_e( 'Show text and images below the order summary', 'purple-optimize-toolkit' ); ?></label>
-			<p class="description"><?php esc_html_e( 'Use the WordPress block editor for headings, images, lists, columns, and buttons. Save your settings here before opening the editor; publish or save content changes in the editor.', 'purple-optimize-toolkit' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Use the WordPress block editor for text, images and the reviews Shortcode block. Generate a review shortcode under Social proof, then paste it into a Shortcode block here. Save settings before opening the editor; publish content changes.', 'purple-optimize-toolkit' ); ?></p>
 			<p><a class="button" id="pot-edit-checkout-content" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=pot_edit_checkout_content' ), 'pot_edit_checkout_content' ) ); ?>"><?php esc_html_e( 'Open block editor', 'purple-optimize-toolkit' ); ?></a></p>
 			<?php if ( trim( pot_checkout_content_source() ) && ! has_blocks( pot_checkout_content_source() ) ) : ?>
 			<p class="description"><?php esc_html_e( 'Existing rich text is preserved in a Classic block. Select Convert to blocks to make each part editable.', 'purple-optimize-toolkit' ); ?></p>
@@ -160,13 +195,31 @@ function pot_checkout_cart_data(): array {
 		}
 		$lines = pot_checkout_product_lines( $product->get_id() );
 		$added = false;
+		$accepted = null;
 		foreach ( $lines as $item ) {
-			$added = $added || ! empty( $item['pot_checkout_upsell'] );
+			if ( ! empty( $item['pot_checkout_upsell'] ) ) {
+				$added = true;
+				$accepted = $item;
+				break;
+			}
 		}
-		$current_price = wc_get_price_to_display( $product, array( 'display_context' => 'cart' ) );
+		$discount = pot_checkout_discount( $row['discount'] ?? '' );
+		$base_price = (float) $product->get_price();
+		if ( $accepted ) {
+			$discount = pot_checkout_accepted_discount( $accepted );
+			$base_price = (float) ( $discount ? $accepted['pot_checkout_base_price'] : $accepted['data']->get_price() );
+		} elseif ( $lines ) {
+			// Catalog/funnel additions cannot be converted into discounted add-ons.
+			$discount = 0;
+			$base_price = (float) reset( $lines )['data']->get_price();
+		}
+		$raw_price = $base_price * ( 1 - $discount / 100 );
+		$current_price = wc_get_price_to_display( $product, array( 'price' => $raw_price, 'display_context' => 'cart' ) );
+		$regular_price = wc_get_price_to_display( $product, array( 'price' => $product->get_regular_price(), 'display_context' => 'cart' ) );
+		$saving_details = pot_checkout_savings_details( $regular_price, $current_price );
+		$savings = $saving_details['amount'];
 		$price_html    = wc_price( $current_price );
-		if ( $product->is_on_sale() ) {
-			$regular_price = wc_get_price_to_display( $product, array( 'price' => $product->get_regular_price(), 'display_context' => 'cart' ) );
+		if ( $savings > 0 ) {
 			$price_html    = wc_format_sale_price( $regular_price, $current_price );
 		}
 		$result['offers'][] = array(
@@ -174,7 +227,10 @@ function pot_checkout_cart_data(): array {
 			'title'       => $row['title'] ?: $product->get_name(),
 			'description' => $row['description'] ?: wp_strip_all_tags( $product->get_short_description() ),
 			'image'       => wp_kses_post( $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy', 'alt' => '' ) ) ),
-			'price'       => wp_kses_post( $price_html . $product->get_price_suffix() ),
+			'price'       => wp_kses_post( $price_html . $product->get_price_suffix( $raw_price ) ),
+			'discount'    => $discount,
+			'savings'     => $savings > 0 ? wp_kses_post( wc_price( $savings ) ) : '',
+			'saving_percentage' => $saving_details['percentage'],
 			'added'       => $added,
 			'in_cart'     => (bool) $lines,
 		);
@@ -219,10 +275,55 @@ function pot_update_checkout_upsell( $data ): void {
 	if ( pot_offer_product_issue_for_product( $product ) || ! apply_filters( 'woocommerce_add_to_cart_validation', true, $id, 1 ) ) {
 		throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException( 'pot_invalid_product', __( 'This add-on cannot be added. Please choose another item.', 'purple-optimize-toolkit' ), 400 );
 	}
-	if ( ! WC()->cart->add_to_cart( $id, 1, 0, array(), array( 'pot_checkout_upsell' => true ) ) ) {
+	$cart_data = array( 'pot_checkout_upsell' => true );
+	foreach ( $settings['upsells'] as $row ) {
+		if ( $id === (int) $row['product_id'] ) {
+			$discount = pot_checkout_discount( $row['discount'] ?? '' );
+			if ( $discount ) {
+				$cart_data['pot_checkout_discount'] = $discount;
+				$cart_data['pot_checkout_base_price'] = (float) $product->get_price();
+			}
+			break;
+		}
+	}
+	if ( ! WC()->cart->add_to_cart( $id, 1, 0, array(), $cart_data ) ) {
 		throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException( 'pot_addon_failed', __( 'Could not add this item. Please check its availability and try again.', 'purple-optimize-toolkit' ), 400 );
 	}
 }
+
+/** Reapply accepted terms idempotently, including after WooCommerce session restoration. */
+function pot_apply_checkout_addon_prices( WC_Cart $cart ): void {
+	if ( is_admin() && ! wp_doing_ajax() ) { return; }
+	foreach ( $cart->get_cart() as $key => $item ) {
+		$discount = pot_checkout_accepted_discount( $item );
+		if ( ! $discount || ! $item['data'] instanceof WC_Product ) { continue; }
+		$price = (float) $item['pot_checkout_base_price'] * ( 1 - $discount / 100 );
+		$cart->cart_contents[ $key ]['data'] = clone $item['data'];
+		$cart->cart_contents[ $key ]['data']->set_price( $price );
+	}
+}
+add_action( 'woocommerce_before_calculate_totals', 'pot_apply_checkout_addon_prices', 21 );
+
+/** Expose the genuine accepted discount in native cart and checkout details. */
+function pot_checkout_addon_item_data( array $data, array $item ): array {
+	$discount = pot_checkout_accepted_discount( $item );
+	if ( $discount ) {
+		$data[] = array( 'key' => __( 'Checkout add-on discount', 'purple-optimize-toolkit' ), 'value' => sprintf( __( '%d%% off', 'purple-optimize-toolkit' ), $discount ) );
+	}
+	return $data;
+}
+add_filter( 'woocommerce_get_item_data', 'pot_checkout_addon_item_data', 10, 2 );
+
+/** Preserve the accepted terms on the order line; never alter the product catalog. */
+function pot_checkout_addon_order_meta( WC_Order_Item_Product $item, string $key, array $values ): void {
+	$discount = pot_checkout_accepted_discount( $values );
+	if ( $discount ) {
+		$item->add_meta_data( __( 'Checkout add-on discount', 'purple-optimize-toolkit' ), sprintf( __( '%d%% off', 'purple-optimize-toolkit' ), $discount ), true );
+		$item->add_meta_data( '_pot_checkout_discount', $discount, true );
+		$item->add_meta_data( '_pot_checkout_base_price', $values['pot_checkout_base_price'], true );
+	}
+}
+add_action( 'woocommerce_checkout_create_order_line_item', 'pot_checkout_addon_order_meta', 10, 3 );
 
 /**
  * Register Store API extension callbacks after WooCommerce Blocks loads.

@@ -82,7 +82,7 @@ try {
 	await shop.locator('.wp-block-woocommerce-add-to-cart-with-options').waitFor();
 	const add = shop.locator('.wp-block-woocommerce-add-to-cart-with-options .wp-block-woocommerce-product-button button').first();
 	await add.click();
-	await shop.locator('.wc-block-mini-cart__button').click();
+	await shop.waitForFunction(() => document.querySelector('.wc-block-mini-cart__drawer')?.getAttribute('aria-hidden') === 'false');
 	await shop.locator('.wc-block-mini-cart__drawer').waitFor({ state: 'visible' });
 	await shop.locator('.wc-block-mini-cart__drawer .wc-block-components-product-name:visible').first().waitFor({ state: 'visible' });
 	await shop.goto(`${site}/cart/`);

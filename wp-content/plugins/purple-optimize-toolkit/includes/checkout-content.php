@@ -41,7 +41,7 @@ function pot_register_checkout_content(): void {
 add_action( 'init', 'pot_register_checkout_content' );
 
 /**
- * Content-only blocks: exclude forms, checkout blocks, shortcodes and remote embeds.
+ * Content-only blocks, plus a Shortcode block restricted to our native reviews.
  *
  * @since 0.9.0
  * @return string[] Supported block names.
@@ -51,7 +51,7 @@ function pot_checkout_content_blocks(): array {
 		'core/paragraph', 'core/heading', 'core/list', 'core/list-item', 'core/image',
 		'core/gallery', 'core/group', 'core/columns', 'core/column', 'core/media-text',
 		'core/buttons', 'core/button', 'core/separator', 'core/spacer', 'core/quote',
-		'core/table', 'core/freeform', 'core/html',
+		'core/table', 'core/freeform', 'core/html', 'core/shortcode',
 	);
 }
 
@@ -124,6 +124,10 @@ function pot_checkout_content_source(): string {
  * @return array Safe parsed block (empty for unsupported types).
  */
 function pot_checkout_content_filter_block( array $block ): array {
+	if ( 'core/shortcode' === $block['blockName'] ) {
+		$html = pot_reviews_checkout_shortcodes( $block['innerHTML'] );
+		return array( 'blockName' => 'core/html', 'attrs' => array(), 'innerBlocks' => array(), 'innerHTML' => $html, 'innerContent' => array( $html ) );
+	}
 	if ( $block['blockName'] && ! in_array( $block['blockName'], pot_checkout_content_blocks(), true ) ) {
 		return array( 'blockName' => null, 'attrs' => array(), 'innerBlocks' => array(), 'innerHTML' => '', 'innerContent' => array() );
 	}

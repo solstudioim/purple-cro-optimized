@@ -37,7 +37,7 @@ test('checkout configuration remains independent and safely editable', () => {
 	assert.doesNotMatch(php, /wp_editor\(/);
 	assert.match(php, /wp_kses_post/);
 	assert.match(php, /'display_context' => 'cart'/);
-	assert.doesNotMatch(php, /set_price\(|update_post_meta\(|wp_insert_post\(/);
+	assert.doesNotMatch(php, /update_post_meta\(|wp_insert_post\(/);
 });
 
 

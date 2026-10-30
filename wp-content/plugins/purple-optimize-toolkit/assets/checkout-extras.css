@@ -40,6 +40,7 @@
 	text-align: end;
 	flex-shrink: 0;
 }
+.pot-checkout-upsell-savings { display: block; font-size: .8em; }
 .pot-checkout-upsell-price del {
 	display: block;
 	font-size: .8em;

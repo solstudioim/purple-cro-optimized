@@ -5,7 +5,7 @@ Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 0.11.5
+Stable tag: 0.11.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,14 +34,14 @@ orders; names must remain off unless the merchant has an appropriate privacy bas
 No external analytics service is used. Offers never silently recharge an order;
 after-purchase acceptance starts a separate checkout and order.
 
-Local preview 0.11.5 is unpublished. Upload the local ZIP for testing; do not use
+Local preview 0.11.10 is unpublished. Upload the local ZIP for testing; do not use
 the child setup download action until the matching GitHub asset is published.
 Older Purple versions show a recommendation, without blocking toolkit installation.
 
 == Installation ==
 
 1. Install and activate WooCommerce 11.1+ on WordPress 7.1+ and PHP 7.4+.
-2. Upload purple-optimize-toolkit-0.11.5.zip under Plugins > Add New > Upload Plugin.
+2. Upload purple-optimize-toolkit-0.11.10.zip under Plugins > Add New > Upload Plugin.
 3. Activate the toolkit, then open WooCommerce > Purple Optimize.
 4. Review compatibility checks and settings. Existing choices are preserved.
 
@@ -71,6 +71,27 @@ Save checkout features action. The offer enable/disable switch saves immediately
 and restores the previous state if saving fails. Settings in other sections are retained.
 
 == Changelog ==
+
+= 0.11.10 =
+* Match add-on card savings labels and regular-price comparisons with native WooCommerce order summaries.
+* Use one combined percentage/currency label on add-on cards, with native Store API rounding and unchanged WooCommerce summary rendering.
+
+= 0.11.9 =
+* Add optional per-add-on percentage discounts; blank or zero preserves catalog pricing.
+* Preserve accepted prices in cart sessions, native totals and order details.
+
+= 0.11.8 =
+* Replace the review navigation bar with subtle borderless arrows inside multi-review rotators.
+* Keep accessible navigation labels, screen-reader position and optional pause control.
+
+= 0.11.7 =
+* Use a borderless, theme-tinted review card inside the existing checkout content frame.
+* Retain the standalone review card outline.
+
+= 0.11.6 =
+* Rename Privacy to Social proof while retaining existing recent-purchase settings.
+* Add native review selection, shortcode generation and preview with static/rotating layouts.
+* Support the reviews shortcode in helpful checkout content without enabling unrelated shortcodes.
 
 = 0.11.5 =
 * Restore native mini-cart opening after add to cart for the Purple Optimize child.

@@ -1,4 +1,4 @@
-> Local preview: child 0.6.0 and toolkit 0.11.5 are unpublished. Upload both locally built ZIPs manually for testing. The previous released flow below describes 0.5.14; do not publish a tag until local review is complete.
+> Local preview: child 0.6.0 and toolkit 0.11.10 are unpublished. Upload both locally built ZIPs manually for testing. The previous released flow below describes 0.5.14; do not publish a tag until local review is complete.
 
 # Companion setup, settings and releases
 
@@ -21,7 +21,7 @@ the experimental WooCommerce React Settings UI feature flag.
    without downloading another copy. Older installed copies must be updated by
    ZIP upload; this flow never overwrites them or resets their settings.
 5. Review **WooCommerce → Purple Optimize → Overview**, then follow its links
-   to Storefront, Product pages, Cart & checkout, Offers and Privacy.
+   to Storefront, Product pages, Cart & checkout, Offers and Social proof.
 
 A section save changes only settings owned by that section. Checkout add-ons and
 helpful content have their own **Save checkout features** action. The offer
