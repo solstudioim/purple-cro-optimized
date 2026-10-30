@@ -8,7 +8,7 @@
  * Requires Plugins: woocommerce
  * WC requires at least: 11.1
  * Plugin URI: https://github.com/solstudioim/purple-cro-optimized
- * Author: Sol Studio
+ * Author: Sol J
  * Author URI: https://github.com/solstudioim
  * License: GPL-2.0-or-later
  * Text Domain: purple-optimize-toolkit

@@ -49,7 +49,7 @@ https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 == Copyright ==
 
-Purple Optimize WordPress Theme, (C) 2026 Sol Studio
+Purple Optimize WordPress Theme, (C) 2026 Sol J
 Purple Optimize is distributed under the terms of the GNU GPL.
 
 Based on Purple WordPress Theme, (C) 2026 Automattic
