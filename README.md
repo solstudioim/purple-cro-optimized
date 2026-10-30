@@ -7,7 +7,7 @@ on Woo's Purple block theme. It preserves the parent's appearance and adds optio
 
 **Current toolkit release:** `0.11.4`
 
-**Historical demo (previous custom design):** [Watch the complete storefront journey](https://solstudioim.github.io/purple-cro-optimized/)
+**Historical demo (previous custom design):** https://purplecrodemo.wpcomstaging.com/
 
 The project is deliberately split into two packages:
 
