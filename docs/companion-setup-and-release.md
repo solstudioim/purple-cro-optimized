@@ -1,3 +1,5 @@
+> Local preview: child 0.6.0 and toolkit 0.11.4 are unpublished. Upload both locally built ZIPs manually for testing. The previous released flow below describes 0.5.14; do not publish a tag until local review is complete.
+
 # Companion setup, settings and releases
 
 The approved interface combines a persistent workspace sidebar with a guided
@@ -7,7 +9,7 @@ the experimental WooCommerce React Settings UI feature flag.
 
 ## Merchant flow
 
-1. Install Purple 1.0.3+ and the Purple Optimize 0.5.14 child theme on WordPress
+1. Install Purple and the Purple Optimize 0.5.14 child theme on WordPress
    7.1+, PHP 7.4+, and WooCommerce 11.1+.
 2. Open **Appearance → Purple Optimize setup**. Local requirements are checked
    automatically; viewing the screen never downloads or activates a plugin.
@@ -30,6 +32,9 @@ the Site Editor. Unsaved changes trigger the browser's standard navigation promp
 
 On multisite, a network administrator installs/activates the toolkit using Network
 Admin; the child setup screen explains this rather than attempting a network mutation.
+Purple 1.0.3 is the tested parent baseline, not an installation requirement. An
+older parent version shows a warning and still allows companion installation;
+WordPress, PHP, child-theme and WooCommerce requirements remain enforced.
 Version checks establish minimum requirements, not universal compatibility or
 confirmation that merchant-customized templates are correct.
 

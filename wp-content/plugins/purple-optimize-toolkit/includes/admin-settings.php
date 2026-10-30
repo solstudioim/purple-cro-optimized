@@ -23,9 +23,9 @@ function pot_settings_sections(): array {
 /** Return settings owned by one section; absent controls in other sections must survive. */
 function pot_settings_section_keys( string $section ): array {
 	$keys = array(
-		'storefront' => array( 'promo_enabled', 'promo_text', 'promo_code', 'instant_search', 'category_navigation', 'footer_policies', 'wishlist' ),
-		'products'   => array( 'sticky_cart', 'sale_percentage', 'stock_threshold', 'reassurance_one', 'reassurance_two', 'reassurance_three' ),
-		'checkout'   => array( 'checkout_trust', 'post_purchase_account', 'mobile_sticky_checkout', 'free_shipping_threshold' ),
+		'storefront' => array( 'promo_enabled', 'promo_text', 'promo_code', 'promo_background', 'instant_search', 'category_navigation', 'footer_policies', 'wishlist' ),
+		'products'   => array( 'product_guidance', 'sticky_cart', 'sale_percentage', 'stock_threshold', 'reassurance_one', 'reassurance_two', 'reassurance_three' ),
+		'checkout'   => array( 'checkout_labels', 'checkout_trust', 'post_purchase_account', 'mobile_sticky_checkout', 'free_shipping_threshold' ),
 		'offers'     => array( 'offer_funnel', 'offer_placement', 'upsell_product_id', 'upsell_discount', 'upsell_countdown', 'downsell_product_id', 'downsell_discount', 'downsell_countdown' ),
 		'privacy'    => array( 'recent_sales', 'social_proof_show_names', 'social_proof_days' ),
 	);
@@ -81,10 +81,10 @@ function pot_render_overview(): void {
 	$settings = pot_settings();
 	?>
 	<section class="pot-settings-card"><h2><?php esc_html_e( 'Compatibility checks', 'purple-optimize-toolkit' ); ?></h2>
-	<p><?php esc_html_e( 'Checked automatically on each visit. These checks confirm minimum versions, not every storefront interaction.', 'purple-optimize-toolkit' ); ?></p>
-	<table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Component', 'purple-optimize-toolkit' ); ?></th><th><?php esc_html_e( 'Installed', 'purple-optimize-toolkit' ); ?></th><th><?php esc_html_e( 'Minimum', 'purple-optimize-toolkit' ); ?></th><th><?php esc_html_e( 'Status', 'purple-optimize-toolkit' ); ?></th></tr></thead><tbody>
+	<p><?php esc_html_e( 'Checked automatically on each visit. Purple 1.0.3 is the tested baseline; an older parent does not block companion installation. Verify storefront behavior when testing another parent version.', 'purple-optimize-toolkit' ); ?></p>
+	<table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Component', 'purple-optimize-toolkit' ); ?></th><th><?php esc_html_e( 'Installed', 'purple-optimize-toolkit' ); ?></th><th><?php esc_html_e( 'Required / recommended', 'purple-optimize-toolkit' ); ?></th><th><?php esc_html_e( 'Status', 'purple-optimize-toolkit' ); ?></th></tr></thead><tbody>
 	<?php foreach ( pot_environment_checks() as $check ) : ?>
-	<tr><th scope="row"><?php echo esc_html( $check['label'] ); ?></th><td><?php echo esc_html( $check['version'] ?: __( 'Not active', 'purple-optimize-toolkit' ) ); ?></td><td><?php echo esc_html( $check['minimum'] ); ?></td><td><?php echo esc_html( $check['ok'] ? __( 'Meets minimum', 'purple-optimize-toolkit' ) : __( 'Needs attention', 'purple-optimize-toolkit' ) ); ?></td></tr>
+	<tr><th scope="row"><?php echo esc_html( $check['label'] ); ?></th><td><?php echo esc_html( $check['version'] ?: __( 'Not active', 'purple-optimize-toolkit' ) ); ?></td><td><?php echo esc_html( $check['minimum'] . ( false === ( $check['required'] ?? true ) ? __( ' (recommended)', 'purple-optimize-toolkit' ) : '' ) ); ?></td><td><?php echo esc_html( $check['ok'] ? __( 'Meets minimum', 'purple-optimize-toolkit' ) : ( false === ( $check['required'] ?? true ) ? __( 'Older parent — testing allowed', 'purple-optimize-toolkit' ) : __( 'Needs attention', 'purple-optimize-toolkit' ) ) ); ?></td></tr>
 	<?php endforeach; ?>
 	</tbody></table><p><a class="button" href="<?php echo esc_url( pot_section_url( 'overview' ) ); ?>"><?php esc_html_e( 'Run checks again', 'purple-optimize-toolkit' ); ?></a></p>
 	<?php if ( 'purple-optimize' !== get_stylesheet() ) : ?><p class="notice notice-warning inline"><?php esc_html_e( 'Purple Optimize is not the active theme. Toolkit settings are retained; verify storefront behavior with your active theme.', 'purple-optimize-toolkit' ); ?></p><?php endif; ?>
@@ -132,16 +132,25 @@ function pot_render_workspace(): void {
 	switch ( $section ) {
 		case 'storefront':
 			foreach ( array( 'promo_enabled' => __( 'Promotion strip', 'purple-optimize-toolkit' ), 'instant_search' => __( 'Instant product search', 'purple-optimize-toolkit' ), 'category_navigation' => __( 'Shop category navigation', 'purple-optimize-toolkit' ), 'footer_policies' => __( 'Footer policy links', 'purple-optimize-toolkit' ), 'wishlist' => __( 'Browser wishlist', 'purple-optimize-toolkit' ) ) as $key => $label ) { pot_checkbox_row( $key, $label, $settings ); }
+			echo '<p class="description">' . esc_html__( 'Promotion strip adds a highlighted store notice. Browser wishlist adds a link beside the native header cart controls. Enabling wishlist creates or reuses a published page; saved items stay in the visitor’s browser.', 'purple-optimize-toolkit' ) . '</p>';
+			?>
+			<tr><th scope="row"><label for="pot-promo-background"><?php esc_html_e( 'Promotion background', 'purple-optimize-toolkit' ); ?></label></th><td>
+			<input type="text" id="pot-promo-background" class="pot-color-picker" name="pot_settings[promo_background]" value="<?php echo esc_attr( $settings['promo_background'] ); ?>">
+			<p class="description"><?php esc_html_e( 'Choose a custom background, or clear it to follow the parent theme accent. Text color adjusts automatically for contrast.', 'purple-optimize-toolkit' ); ?></p>
+			</td></tr>
+			<?php
 			pot_workspace_field( 'promo_text', __( 'Promotion text', 'purple-optimize-toolkit' ), $settings );
 			pot_workspace_field( 'promo_code', __( 'Coupon code', 'purple-optimize-toolkit' ), $settings, 'text', __( 'Optional. Use a real coupon configured in WooCommerce.', 'purple-optimize-toolkit' ) );
 			break;
 		case 'products':
+			pot_checkbox_row( 'product_guidance', __( 'Product guidance: stock, countdown, reassurance and reviews', 'purple-optimize-toolkit' ), $settings );
 			pot_checkbox_row( 'sticky_cart', __( 'Sticky add to cart', 'purple-optimize-toolkit' ), $settings );
 			pot_checkbox_row( 'sale_percentage', __( 'Percentage sale badge', 'purple-optimize-toolkit' ), $settings );
 			pot_workspace_field( 'stock_threshold', __( 'Low-stock threshold', 'purple-optimize-toolkit' ), $settings, 'number', __( 'Uses real managed stock. Set to 0 to hide low-stock guidance.', 'purple-optimize-toolkit' ), '100' );
 			foreach ( array( 'reassurance_one', 'reassurance_two', 'reassurance_three' ) as $index => $key ) { pot_workspace_field( $key, sprintf( __( 'Reassurance point %d', 'purple-optimize-toolkit' ), $index + 1 ), $settings, 'text', __( 'Use accurate delivery, returns or support information.', 'purple-optimize-toolkit' ) ); }
 			break;
 		case 'checkout':
+			pot_checkbox_row( 'checkout_labels', __( 'Required and optional checkout field labels', 'purple-optimize-toolkit' ), $settings );
 			foreach ( array( 'checkout_trust' => __( 'Cart pre-checkout guidance', 'purple-optimize-toolkit' ), 'post_purchase_account' => __( 'Post-purchase account invitation', 'purple-optimize-toolkit' ), 'mobile_sticky_checkout' => __( 'Sticky native checkout actions on mobile', 'purple-optimize-toolkit' ) ) as $key => $label ) { pot_checkbox_row( $key, $label, $settings ); }
 			pot_workspace_field( 'free_shipping_threshold', __( 'Free-shipping threshold', 'purple-optimize-toolkit' ), $settings, 'number', __( 'Match an actual shipping method. Set to 0 to hide progress; this does not configure shipping rates.', 'purple-optimize-toolkit' ) );
 			break;

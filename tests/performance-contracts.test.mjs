@@ -26,10 +26,6 @@ const themeCss = fs.readFileSync(
 	path.join(repositoryRoot, 'wp-content/themes/purple-optimize/style.css'),
 	'utf8'
 );
-const homepagePattern = fs.readFileSync(
-	path.join(repositoryRoot, 'wp-content/themes/purple-optimize/patterns/storefront-home.php'),
-	'utf8'
-);
 const importerSource = fs.readFileSync(
 	path.join(repositoryRoot, 'tools/import-open-media-gallery.php'),
 	'utf8'
@@ -110,10 +106,11 @@ test('shipping progress follows live WooCommerce cart totals without polling or 
 	};
 	const progress = {
 		dataset: { target: '75' },
+		classList: { toggle() {} },
 		hidden: false,
 		querySelector: (selector) => selector === 'p' ? message : bar,
 	};
-	const cartRoot = { parentNode: { insertBefore() {} } };
+	const cartRoot = { classList: { contains: () => false }, parentNode: { insertBefore() {} } };
 	const document = {
 		body: { addEventListener() {}, classList: { contains: () => false } },
 		addEventListener: (event, callback) => { if (event === 'DOMContentLoaded') ready = callback; },
@@ -156,13 +153,6 @@ test('shipping progress follows live WooCommerce cart totals without polling or 
 	assert.doesNotMatch(toolkitSource, /function setupShippingProgress[\s\S]*?fetch\(/);
 });
 
-test('child theme lazily marks non-primary Woo gallery images', () => {
-	assert.match(themeFunctions, /render_block_woocommerce\/product-gallery/);
-	assert.match(themeFunctions, /WP_HTML_Tag_Processor/);
-	assert.match(themeFunctions, /set_attribute\(\s*'loading',\s*'lazy'/);
-	assert.match(themeFunctions, /set_attribute\(\s*'fetchpriority',\s*'low'/);
-});
-
 test('media importer bounds and optimizes future originals', () => {
 	assert.match(importerSource, /POT_OPEN_MEDIA_MAX_DIMENSION/);
 	assert.match(importerSource, /POT_OPEN_MEDIA_QUALITY/);
@@ -184,14 +174,10 @@ test('storefront performance measurement is reproducible across primary routes',
 	assert.match(source, /resourceCount/);
 });
 
-test('first render uses system fonts and prioritizes only the homepage hero', () => {
-	assert.match(themeJson, /"slug":\s*"system"/);
-	assert.match(themeJson, /-apple-system, BlinkMacSystemFont/);
-	assert.match(themeJson, /"fontFamily":\s*"var\(--wp--preset--font-family--system\)"/);
-	assert.doesNotMatch(themeCss, /Jost/);
-	assert.match(homepagePattern, /"loading":"eager"/);
-	assert.match(homepagePattern, /"fetchPriority":"high"/);
-	assert.equal((homepagePattern.match(/"fetchPriority":"high"/g) || []).length, 1);
+test('child leaves parent fonts and gallery loading unchanged', () => {
+ assert.equal(JSON.parse(themeJson).settings, undefined);
+ assert.doesNotMatch(themeFunctions, /wp_enqueue_style|render_block|loading/);
+ assert.equal(themeCss.replace(/\/\*[\s\S]*?\*\//g, '').trim(), '');
 });
 
 test('toolkit exposes explicit route-aware feature flags without dequeuing Woo assets', () => {

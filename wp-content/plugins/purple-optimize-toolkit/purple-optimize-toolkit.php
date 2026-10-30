@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Purple Optimize Toolkit
  * Description: Lightweight, evidence-based conversion features for WooCommerce and the Purple Optimize child theme.
- * Version: 0.10.0
+ * Version: 0.11.4
  * Requires at least: 7.1
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'POT_VERSION', '0.10.0' );
+define( 'POT_VERSION', '0.11.4' );
 define( 'POT_FILE', __FILE__ );
 define( 'POT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'POT_URL', plugin_dir_url( __FILE__ ) );
@@ -48,6 +48,7 @@ function pot_defaults(): array {
 		'promo_enabled'          => 1,
 		'promo_text'             => __( 'Free shipping on qualifying orders', 'purple-optimize-toolkit' ),
 		'promo_code'             => '',
+		'promo_background'       => '',
 		'instant_search'         => 1,
 		'category_navigation'    => 1,
 		'checkout_trust'         => 1,
@@ -68,6 +69,8 @@ function pot_defaults(): array {
 		'downsell_product_id'    => 0,
 		'downsell_discount'      => 70,
 		'downsell_countdown'     => 10,
+		'product_guidance'      => 1,
+		'checkout_labels'       => 1,
 		'stock_threshold'        => 5,
 		'free_shipping_threshold'=> 75,
 		'reassurance_one'        => __( 'Delivery details shown at checkout', 'purple-optimize-toolkit' ),
@@ -196,12 +199,13 @@ function pot_sanitize_settings( $input ): array {
 	$defaults = pot_defaults();
 	$output   = array();
 
-	foreach ( array( 'promo_enabled', 'instant_search', 'category_navigation', 'checkout_trust', 'footer_policies', 'post_purchase_account', 'wishlist', 'sticky_cart', 'mobile_sticky_checkout', 'sale_percentage', 'recent_sales', 'social_proof_show_names', 'offer_funnel' ) as $key ) {
+	foreach ( array( 'promo_enabled', 'instant_search', 'category_navigation', 'checkout_trust', 'footer_policies', 'post_purchase_account', 'wishlist', 'sticky_cart', 'mobile_sticky_checkout', 'sale_percentage', 'recent_sales', 'social_proof_show_names', 'offer_funnel', 'product_guidance', 'checkout_labels' ) as $key ) {
 		$output[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 	}
 
 	$output['promo_text']              = sanitize_text_field( $input['promo_text'] ?? $defaults['promo_text'] );
 	$output['promo_code']              = sanitize_text_field( $input['promo_code'] ?? '' );
+	$output['promo_background']        = sanitize_hex_color( is_string( $input['promo_background'] ?? null ) ? $input['promo_background'] : '' ) ?: '';
 	$output['stock_threshold']         = max( 0, min( 100, absint( $input['stock_threshold'] ?? $defaults['stock_threshold'] ) ) );
 	$output['free_shipping_threshold'] = max( 0, (float) ( $input['free_shipping_threshold'] ?? $defaults['free_shipping_threshold'] ) );
 	$output['social_proof_days']       = max( 1, min( 365, absint( $input['social_proof_days'] ?? $defaults['social_proof_days'] ) ) );
@@ -245,8 +249,9 @@ function pot_admin_assets( string $hook_suffix ): void {
 		return;
 	}
 	wp_enqueue_style( 'woocommerce_admin_styles' );
+	wp_enqueue_style( 'wp-color-picker' );
 	wp_enqueue_style( 'pot-admin-settings', POT_URL . 'assets/admin-settings.css', array(), POT_VERSION );
-	wp_enqueue_script( 'pot-admin-settings', POT_URL . 'assets/admin-settings.js', array( 'jquery', 'wc-enhanced-select' ), POT_VERSION, true );
+	wp_enqueue_script( 'pot-admin-settings', POT_URL . 'assets/admin-settings.js', array( 'jquery', 'wc-enhanced-select', 'wp-color-picker' ), POT_VERSION, true );
 	wp_enqueue_script( 'wc-enhanced-select' );
 	wp_enqueue_script( 'pot-admin-offer-toggle', POT_URL . 'assets/admin-offer-toggle.js', array(), POT_VERSION, true );
 	wp_localize_script( 'pot-admin-offer-toggle', 'potOfferToggle', array(
@@ -393,14 +398,15 @@ function pot_frontend_feature_flags(array $settings): array {
 	$is_account = is_account_page();
 
 	return array(
+		'components'      => ( ! pot_is_offer_page() && ! pot_is_active_checkout() && ( ! empty( $settings['category_navigation'] ) || ! empty( $settings['footer_policies'] ) ) ) || ! empty( $settings['sale_percentage'] ) || ( ( $is_cart || pot_is_active_checkout() ) && ! empty( $settings['mobile_sticky_checkout'] ) ),
 		'promo'           => ! empty( $settings['promo_enabled'] ) && ! $is_offer && ! pot_is_active_checkout(),
 		'search'          => ! empty( $settings['instant_search'] ) && ! $is_offer && ! pot_is_active_checkout(),
-		'wishlist'        => ! empty( $settings['wishlist'] ) && ( $is_product || is_page( 'wishlist' ) ),
-		'countdowns'      => $is_product || $is_offer,
-		'product'         => $is_product,
-		'cart'            => $is_cart,
-		'checkout'        => pot_is_active_checkout(),
-		'commerce'        => $is_cart || $is_checkout || $is_account || $is_offer,
+		'wishlist'        => ! empty( $settings['wishlist'] ) && ! $is_offer && ! pot_is_active_checkout(),
+		'countdowns'      => ( $is_product && ! empty( $settings['product_guidance'] ) ) || $is_offer,
+		'product'         => $is_product && ! empty( $settings['sticky_cart'] ),
+		'cart'            => ( $is_cart || pot_is_active_checkout() ) && (float) $settings['free_shipping_threshold'] > 0,
+		'checkout'        => pot_is_active_checkout() && ! empty( $settings['checkout_labels'] ),
+		'commerce'        => ( $is_cart || $is_checkout || $is_account || $is_offer ) && ( (float) $settings['free_shipping_threshold'] > 0 || ! empty( $settings['checkout_trust'] ) || ! empty( $settings['post_purchase_account'] ) || ! empty( $settings['offer_funnel'] ) ),
 		'offer'           => $is_offer || ( ! empty( $settings['offer_funnel'] ) && ( $is_cart || $is_checkout ) ),
 		'recentPurchases' => ! empty( $settings['recent_sales'] ) && ! $is_offer && ! $is_cart && ! $is_checkout && ! $is_account,
 	);
@@ -415,6 +421,9 @@ function pot_enqueue_assets(): void {
 	}
 
 	$settings = pot_settings();
+	if ( ! in_array( true, pot_frontend_feature_flags( $settings ), true ) ) {
+		return;
+	}
 	$category = is_product_category() ? get_queried_object_id() : 0;
 	wp_enqueue_style( 'purple-optimize-toolkit', POT_URL . 'assets/toolkit.css', array(), POT_VERSION );
 	wp_enqueue_script(
@@ -481,37 +490,82 @@ function pot_is_active_checkout(): bool {
  */
 function pot_body_classes( array $classes ): array {
 	$settings = pot_settings();
-	if ( ! empty( $settings['mobile_sticky_checkout'] ) && ( is_cart() || is_checkout() ) ) {
+	if ( ! empty( $settings['mobile_sticky_checkout'] ) && ( is_cart() || pot_is_active_checkout() ) ) {
 		$classes[] = 'pot-mobile-sticky-checkout-enabled';
 	}
-	return pot_presentation_checkout_classes(
-		$classes,
-		is_checkout(),
-		is_wc_endpoint_url( 'order-received' ),
-		is_wc_endpoint_url( 'order-pay' ),
-		pot_is_offer_page()
-	);
+	return $classes;
 }
 add_filter( 'body_class', 'pot_body_classes' );
+
+/**
+ * Choose the higher-contrast black/white foreground for a custom background.
+ *
+ * @param string $background Valid three- or six-digit hex color.
+ * @return string Hex foreground color, or empty for an invalid background.
+ */
+function pot_promo_text_color( string $background ): string {
+	$background = sanitize_hex_color( $background );
+	if ( ! $background ) {
+		return '';
+	}
+	$hex = substr( $background, 1 );
+	if ( 3 === strlen( $hex ) ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+	$linear = array();
+	foreach ( str_split( $hex, 2 ) as $channel ) {
+		$value = hexdec( $channel ) / 255;
+		$linear[] = $value <= 0.04045 ? $value / 12.92 : pow( ( $value + 0.055 ) / 1.055, 2.4 );
+	}
+	$luminance = 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2];
+	return 1.05 / ( $luminance + 0.05 ) >= ( $luminance + 0.05 ) / 0.05 ? '#ffffff' : '#000000';
+}
 
 /**
  * Render the configurable promotion strip.
  */
 function pot_promotion_strip(): void {
 	$settings = pot_settings();
-	if ( pot_is_offer_page() || pot_is_active_checkout() || empty( $settings['promo_enabled'] ) || '' === trim( (string) $settings['promo_text'] ) ) {
+	if ( pot_is_offer_page() || pot_is_active_checkout() ) {
+		return;
+	}
+	$background = sanitize_hex_color( (string) $settings['promo_background'] );
+	$custom_style = $background ? '--pot-promo-background:' . $background . ';--pot-promo-text:' . pot_promo_text_color( $background ) . ';' : '';
+	$promotion = ! empty( $settings['promo_enabled'] ) && '' !== trim( (string) $settings['promo_text'] );
+	if ( ! $promotion ) {
 		return;
 	}
 	?>
-	<aside class="pot-promo" aria-label="<?php esc_attr_e( 'Store promotion', 'purple-optimize-toolkit' ); ?>">
+	<aside class="pot-promo has-global-padding is-layout-constrained" style="<?php echo esc_attr( $custom_style ); ?>" aria-label="<?php esc_attr_e( 'Store promotion', 'purple-optimize-toolkit' ); ?>">
+		<div class="pot-promo-inner alignwide">
 		<span><?php echo esc_html( (string) $settings['promo_text'] ); ?></span>
 		<?php if ( '' !== trim( (string) $settings['promo_code'] ) ) : ?>
 		<button class="pot-copy-code" type="button" data-code="<?php echo esc_attr( (string) $settings['promo_code'] ); ?>"><?php echo esc_html( (string) $settings['promo_code'] ); ?></button>
 		<?php endif; ?>
+		</div>
 	</aside>
 	<?php
 }
 add_action( 'wp_body_open', 'pot_promotion_strip', 5 );
+
+/**
+ * Add wishlist access beside the parent's existing mini-cart control.
+ *
+ * @param string $html Native mini-cart markup.
+ * @return string Native markup with an optional sibling utility link.
+ */
+function pot_header_wishlist_link( string $html ): string {
+	if ( empty( pot_settings()['wishlist'] ) || pot_is_offer_page() || pot_is_active_checkout() ) {
+		return $html;
+	}
+	$url = pot_wishlist_url();
+	if ( ! $url ) {
+		return $html;
+	}
+	$link = '<a class="pot-wishlist-link pot-header-wishlist" href="' . esc_url( $url ) . '"><span aria-hidden="true">♡</span><span class="screen-reader-text">' . esc_html__( 'Wishlist', 'purple-optimize-toolkit' ) . '</span> (<span class="pot-wishlist-count">0</span>)</a>';
+	return $link . $html;
+}
+add_filter( 'render_block_woocommerce/mini-cart', 'pot_header_wishlist_link' );
 
 /**
  * Expose the top-level product taxonomy without requiring menu editing.
@@ -526,21 +580,35 @@ function pot_category_navigation(): void {
 		return;
 	}
 	?>
-	<nav class="pot-category-nav" aria-label="<?php esc_attr_e( 'Shop categories', 'purple-optimize-toolkit' ); ?>">
+	<div class="pot-category-container has-global-padding is-layout-constrained">
+	<nav class="pot-category-nav alignwide" aria-label="<?php esc_attr_e( 'Shop categories', 'purple-optimize-toolkit' ); ?>">
 		<strong><?php esc_html_e( 'Shop categories', 'purple-optimize-toolkit' ); ?></strong>
 		<a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>"><?php esc_html_e( 'All products', 'purple-optimize-toolkit' ); ?></a>
 		<?php foreach ( $categories as $category ) : ?>
 		<a href="<?php echo esc_url( get_term_link( $category ) ); ?>" <?php echo is_product_category( $category->slug ) ? 'aria-current="page"' : ''; ?>><?php echo esc_html( $category->name ); ?></a>
 		<?php endforeach; ?>
 	</nav>
+	</div>
 	<?php
 }
-add_action( 'wp_body_open', 'pot_category_navigation', 8 );
+
+/** Append discovery links below a native header without replacing its blocks. */
+function pot_categories_after_header( string $html, array $block ): string {
+	$attrs = $block['attrs'] ?? array();
+	if ( 'header' !== ( $attrs['slug'] ?? '' ) && 'header' !== ( $attrs['area'] ?? '' ) && 'header' !== ( $attrs['tagName'] ?? '' ) ) {
+		return $html;
+	}
+	ob_start();
+	pot_category_navigation();
+	return $html . ob_get_clean();
+}
+add_filter( 'render_block_core/template-part', 'pot_categories_after_header', 10, 2 );
 
 /**
  * Keep one discreet support path in the enclosed checkout header.
  */
 function pot_checkout_help_link(): void {
+	if ( empty( pot_settings()['checkout_trust'] ) ) { return; }
 	$contact = get_page_by_path( 'contact' );
 	$url     = $contact instanceof WP_Post ? get_permalink( $contact ) : '';
 	$url     = pot_presentation_checkout_help_url(
@@ -560,59 +628,6 @@ function pot_checkout_help_link(): void {
 	);
 }
 add_action( 'wp_body_open', 'pot_checkout_help_link', 7 );
-
-/**
- * Replace the parent demo pattern's hash links with real local destinations.
- *
- * @param array<string, mixed> $block Parsed block.
- * @return array<string, mixed>
- */
-function pot_resolve_placeholder_navigation( array $block ): array {
-	if ( 'core/navigation-link' !== ( $block['blockName'] ?? '' ) || '#' !== ( $block['attrs']['url'] ?? '' ) ) {
-		return $block;
-	}
-	$label = strtolower( html_entity_decode( wp_strip_all_tags( (string) ( $block['attrs']['label'] ?? '' ) ), ENT_QUOTES, get_bloginfo( 'charset' ) ) );
-	$shop  = wc_get_page_permalink( 'shop' );
-	$destinations = array(
-		'cardigans'          => get_term_link( get_term_by( 'name', 'Knitwear', 'product_cat' ) ?: 0 ),
-		'sweaters'           => get_term_link( get_term_by( 'name', 'Knitwear', 'product_cat' ) ?: 0 ),
-		'shirts'             => $shop,
-		'accessories'        => get_term_link( get_term_by( 'name', 'Accessories', 'product_cat' ) ?: 0 ),
-		'about'              => get_permalink( get_page_by_path( 'about' ) ?: 0 ),
-		'contact us'         => get_permalink( get_page_by_path( 'contact' ) ?: 0 ),
-		'faqs'               => get_permalink( get_page_by_path( 'faqs' ) ?: 0 ),
-		'blog'               => get_permalink( get_page_by_path( 'journal' ) ?: 0 ),
-		'shipping & returns' => get_permalink( get_page_by_path( 'shipping-returns' ) ?: 0 ),
-		'privacy policy'     => get_privacy_policy_url(),
-		'terms & conditions' => get_permalink( absint( get_option( 'woocommerce_terms_page_id' ) ) ),
-	);
-	$url = $destinations[ $label ] ?? '';
-	if ( $url && ! is_wp_error( $url ) ) {
-		$block['attrs']['url'] = $url;
-	}
-	return $block;
-}
-add_filter( 'render_block_data', 'pot_resolve_placeholder_navigation' );
-
-/**
- * Update static inner markup retained by synced block patterns.
- *
- * @param string               $content Rendered block HTML.
- * @param array<string, mixed> $block   Parsed block.
- * @return string
- */
-function pot_render_placeholder_navigation( string $content, array $block ): string {
-	if ( 'core/social-link' === ( $block['blockName'] ?? '' ) && '#' === ( $block['attrs']['url'] ?? '' ) ) {
-		return '';
-	}
-	$resolved = pot_resolve_placeholder_navigation( $block );
-	$url      = (string) ( $resolved['attrs']['url'] ?? '' );
-	if ( 'core/navigation-link' === ( $block['blockName'] ?? '' ) && '#' !== $url && '' !== $url ) {
-		$content = str_replace( 'href="#"', 'href="' . esc_url( $url ) . '"', $content );
-	}
-	return $content;
-}
-add_filter( 'render_block', 'pot_render_placeholder_navigation', 8, 2 );
 
 /**
  * Search published WooCommerce products.
@@ -735,7 +750,7 @@ add_filter( 'render_block', 'pot_filter_sale_badge_block', 10, 2 );
  * @return string
  */
 function pot_coordinate_product_stock_message( string $html, WC_Product $product ): string {
-	if ( ! is_product() ) {
+	if ( ! is_product() || empty( pot_settings()['product_guidance'] ) ) {
 		return $html;
 	}
 
@@ -761,7 +776,7 @@ add_filter( 'woocommerce_get_stock_html', 'pot_coordinate_product_stock_message'
  * @return string
  */
 function pot_filter_stock_indicator_block( string $content, array $block ): string {
-	if ( ! is_product() || 'woocommerce/product-stock-indicator' !== ( $block['blockName'] ?? '' ) ) {
+	if ( empty( pot_settings()['product_guidance'] ) || ! is_product() || 'woocommerce/product-stock-indicator' !== ( $block['blockName'] ?? '' ) ) {
 		return $content;
 	}
 
@@ -792,9 +807,11 @@ add_filter( 'render_block', 'pot_filter_stock_indicator_block', 9, 2 );
  */
 function pot_product_panel( WC_Product $product ): string {
 	$settings = pot_settings();
-	$stock    = $product->managing_stock() ? $product->get_stock_quantity() : null;
-	$sale_end = $product->get_date_on_sale_to();
-	$reviews  = (int) $product->get_review_count();
+	$guidance = ! empty( $settings['product_guidance'] );
+	if ( ! $guidance && empty( $settings['wishlist'] ) ) { return ''; }
+	$stock    = $guidance && $product->managing_stock() ? $product->get_stock_quantity() : null;
+	$sale_end = $guidance ? $product->get_date_on_sale_to() : false;
+	$reviews  = $guidance ? (int) $product->get_review_count() : 0;
 	$featured = $reviews ? get_comments( array( 'post_id' => $product->get_id(), 'status' => 'approve', 'type' => 'review', 'number' => 1, 'orderby' => 'comment_meta_value_num', 'meta_key' => 'rating', 'order' => 'DESC' ) ) : array();
 	$photo_credits = array();
 	foreach ( $product->get_gallery_image_ids() as $attachment_id ) {
@@ -826,13 +843,15 @@ function pot_product_panel( WC_Product $product ): string {
 		<p class="pot-countdown" data-end="<?php echo esc_attr( gmdate( 'c', $sale_end->getTimestamp() ) ); ?>"><span><?php esc_html_e( 'Scheduled offer ends in', 'purple-optimize-toolkit' ); ?></span> <strong data-countdown role="timer"></strong></p>
 		<?php endif; ?>
 		<?php if ( ! empty( $settings['wishlist'] ) ) : ?>
-		<button class="pot-wishlist-button" type="button" data-product="<?php echo esc_attr( (string) $product->get_id() ); ?>" data-title="<?php echo esc_attr( $product->get_name() ); ?>" data-url="<?php echo esc_url( $product->get_permalink() ); ?>" data-image="<?php echo esc_url( wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ) ); ?>" data-price="<?php echo esc_attr( wp_strip_all_tags( $product->get_price_html() ) ); ?>" aria-pressed="false">♡ <span><?php esc_html_e( 'Save to wishlist', 'purple-optimize-toolkit' ); ?></span></button>
+		<button class="pot-wishlist-button wp-element-button" type="button" data-product="<?php echo esc_attr( (string) $product->get_id() ); ?>" data-title="<?php echo esc_attr( $product->get_name() ); ?>" data-url="<?php echo esc_url( $product->get_permalink() ); ?>" data-image="<?php echo esc_url( wp_get_attachment_image_url( $product->get_image_id(), 'woocommerce_thumbnail' ) ?: wc_placeholder_img_src( 'woocommerce_thumbnail' ) ); ?>" data-price="<?php echo esc_attr( wp_strip_all_tags( $product->get_price_html() ) ); ?>" aria-pressed="false">♡ <span><?php esc_html_e( 'Save to wishlist', 'purple-optimize-toolkit' ); ?></span></button>
 		<?php endif; ?>
+		<?php if ( $guidance ) : ?>
 		<ul class="pot-reassurance" aria-label="<?php esc_attr_e( 'Purchase information', 'purple-optimize-toolkit' ); ?>">
 			<li><?php echo esc_html( (string) $settings['reassurance_one'] ); ?></li>
 			<li><?php echo esc_html( (string) $settings['reassurance_two'] ); ?></li>
 			<li><?php echo esc_html( (string) $settings['reassurance_three'] ); ?></li>
 		</ul>
+		<?php endif; ?>
 		<?php if ( $featured ) : ?>
 		<blockquote class="pot-featured-review"><p>“<?php echo esc_html( wp_trim_words( $featured[0]->comment_content, 24 ) ); ?>”</p><cite><?php echo esc_html( $featured[0]->comment_author ); ?> · <?php esc_html_e( 'approved review', 'purple-optimize-toolkit' ); ?></cite></blockquote>
 		<?php endif; ?>
@@ -1099,6 +1118,37 @@ function pot_offer_expiry( string $step, WC_Product $product, int $minutes ): in
 }
 
 /**
+ * Scope offer decisions to the current cart and configured offer, for all shoppers.
+ *
+ * Old unscoped completion flags cannot establish that the present offer was seen.
+ * Offer/add-on lines are excluded so accepting an extra never restarts the funnel.
+ *
+ * @param array<string, mixed> $settings Current settings.
+ */
+function pot_sync_offer_session( array $settings ): void {
+	if ( ! WC()->session || ! WC()->cart ) {
+		return;
+	}
+	$cart = array();
+	foreach ( WC()->cart->get_cart() as $key => $item ) {
+		if ( ! empty( $item['pot_offer_step'] ) || ! empty( $item['pot_checkout_upsell'] ) ) {
+			continue;
+		}
+		$cart[ $key ] = array( (int) $item['product_id'], (int) ( $item['variation_id'] ?? 0 ), (float) $item['quantity'] );
+	}
+	ksort( $cart );
+	$config = array_intersect_key( $settings, array_flip( array( 'offer_placement', 'upsell_product_id', 'upsell_discount', 'upsell_countdown', 'downsell_product_id', 'downsell_discount', 'downsell_countdown' ) ) );
+	ksort( $config );
+	$context = hash( 'sha256', wp_json_encode( array( $cart, $config ) ) );
+	if ( WC()->session->get( 'pot_offer_context' ) !== $context ) {
+		foreach ( array( 'pot_offer_funnel_complete', 'pot_inline_offer_stage', 'pot_offer_expiry_upsell', 'pot_offer_expiry_downsell' ) as $key ) {
+			WC()->session->__unset( $key );
+		}
+		WC()->session->set( 'pot_offer_context', $context );
+	}
+}
+
+/**
  * Intercept checkout and process offer-page decisions.
  */
 function pot_handle_offer_funnel(): void {
@@ -1112,6 +1162,9 @@ function pot_handle_offer_funnel(): void {
 	}
 
 	$placement = (string) $settings['offer_placement'];
+	if ( in_array( $placement, array( 'pre_checkout', 'checkout_inline' ), true ) && ( pot_is_active_checkout() || pot_is_offer_page() ) ) {
+		pot_sync_offer_session( $settings );
+	}
 	if ( 'pre_checkout' === $placement && is_checkout() && ! is_wc_endpoint_url( 'order-received' ) && ! is_checkout_pay_page() && ! WC()->cart->is_empty() ) {
 		if ( WC()->session->get( 'pot_offer_funnel_complete' ) ) {
 			return;
@@ -1292,8 +1345,8 @@ function pot_render_inline_offer(): void {
 				<input type="hidden" name="action" value="pot_inline_offer_decision">
 				<input type="hidden" name="pot_offer_step" value="<?php echo esc_attr( $step ); ?>">
 				<?php wp_nonce_field( 'pot_inline_offer_' . $step, 'pot_offer_nonce' ); ?>
-				<button class="pot-offer-accept" type="submit" name="pot_offer_action" value="accept"><?php esc_html_e( 'Add this offer', 'purple-optimize-toolkit' ); ?></button>
-				<button class="pot-offer-reject" type="submit" name="pot_offer_action" value="reject"><?php esc_html_e( 'No thanks', 'purple-optimize-toolkit' ); ?></button>
+				<button class="pot-offer-accept wp-element-button" type="submit" name="pot_offer_action" value="accept"><?php esc_html_e( 'Add this offer', 'purple-optimize-toolkit' ); ?></button>
+				<button class="pot-offer-reject wp-element-button" type="submit" name="pot_offer_action" value="reject"><?php esc_html_e( 'No thanks', 'purple-optimize-toolkit' ); ?></button>
 			</form>
 		</div>
 	</aside>
@@ -1417,7 +1470,7 @@ add_action( 'woocommerce_checkout_create_order_line_item', 'pot_offer_order_item
  * @param array  $cart_data    Custom cart item data.
  */
 function pot_reset_funnel_for_new_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_data ): void {
-	if ( ! WC()->session || ! WC()->cart || ! WC()->session->get( 'pot_offer_funnel_complete' ) || ! empty( $cart_data['pot_offer_step'] ) ) {
+	if ( ! WC()->session || ! WC()->cart || ! empty( $cart_data['pot_offer_step'] ) || ! empty( $cart_data['pot_checkout_upsell'] ) ) {
 		return;
 	}
 	if ( WC()->cart->get_cart_contents_count() <= (float) $quantity ) {
@@ -1431,6 +1484,7 @@ add_action( 'woocommerce_add_to_cart', 'pot_reset_funnel_for_new_cart', 10, 6 );
  */
 function pot_reset_funnel_on_empty(): void {
 	if ( WC()->session ) {
+		WC()->session->__unset( 'pot_offer_context' );
 		WC()->session->__unset( 'pot_offer_funnel_complete' );
 		WC()->session->__unset( 'pot_inline_offer_stage' );
 		WC()->session->__unset( 'pot_post_purchase_parent_order' );
@@ -1507,7 +1561,7 @@ function pot_account_invitation(): void {
 	?>
 	<aside class="pot-account-invitation">
 		<div><strong><?php esc_html_e( 'Save time on your next visit', 'purple-optimize-toolkit' ); ?></strong><span><?php esc_html_e( 'Create an account after checkout to keep addresses and order history together.', 'purple-optimize-toolkit' ); ?></span></div>
-		<a href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>"><?php esc_html_e( 'Create an account', 'purple-optimize-toolkit' ); ?></a>
+		<a class="wp-element-button" href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>"><?php esc_html_e( 'Create an account', 'purple-optimize-toolkit' ); ?></a>
 	</aside>
 	<?php
 }
@@ -1556,7 +1610,7 @@ function pot_footer_helpers(): void {
 			?>
 		<aside class="pot-sticky-cart" aria-hidden="true" data-product-type="<?php echo esc_attr( $product->get_type() ); ?>">
 			<div><?php echo $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy' ) ); ?><span><strong><?php echo esc_html( $product->get_name() ); ?></strong><span><?php echo wp_kses_post( $product->get_price_html() ); ?></span></span></div>
-			<button type="button"><span class="pot-sticky-cart-label"><?php echo esc_html( $product->is_type( 'simple' ) ? $product->single_add_to_cart_text() : __( 'Choose options', 'purple-optimize-toolkit' ) ); ?></span></button>
+			<button type="button" class="wp-element-button"><span class="pot-sticky-cart-label"><?php echo esc_html( $product->is_type( 'simple' ) ? $product->single_add_to_cart_text() : __( 'Choose options', 'purple-optimize-toolkit' ) ); ?></span></button>
 			<span class="pot-sticky-cart-status screen-reader-text" role="status" aria-live="polite" aria-atomic="true"></span>
 		</aside>
 		<?php
@@ -1597,6 +1651,56 @@ function pot_render_product_readiness_meta_box( WP_Post $post ): void {
 	}
 	echo '</ul><p class="description">' . esc_html__( 'Use accurate images, scale/context, and product-specific copy. This checklist does not replace content review.', 'purple-optimize-toolkit' ) . '</p>';
 }
+
+/**
+ * Find a published native page containing the wishlist shortcode.
+ *
+ * @return int Page ID, or zero when no published destination exists.
+ */
+function pot_wishlist_page_id(): int {
+	$saved = get_post( (int) get_option( 'pot_wishlist_page_id', 0 ) );
+	if ( $saved instanceof WP_Post && 'page' === $saved->post_type && 'publish' === $saved->post_status && ! $saved->post_password && has_shortcode( $saved->post_content, 'purple_optimize_wishlist' ) ) {
+		return (int) $saved->ID;
+	}
+	$pages = get_posts( array( 'post_type' => 'page', 'post_status' => 'publish', 's' => 'purple_optimize_wishlist', 'posts_per_page' => -1 ) );
+	foreach ( $pages as $page ) {
+		if ( ! $page->post_password && has_shortcode( $page->post_content, 'purple_optimize_wishlist' ) ) {
+			return (int) $page->ID;
+		}
+	}
+	return 0;
+}
+
+/** Return the real published wishlist destination without assuming its slug. */
+function pot_wishlist_url(): string {
+	$id = pot_wishlist_page_id();
+	return $id ? (string) get_permalink( $id ) : '';
+}
+
+/**
+ * Provision the native wishlist page only for an administrator's enabled feature.
+ * Reuse existing shortcode pages and never replace merchant-authored content.
+ */
+function pot_ensure_wishlist_page(): void {
+	if ( ! current_user_can( 'manage_woocommerce' ) || empty( pot_settings()['wishlist'] ) ) {
+		return;
+	}
+	$id = pot_wishlist_page_id();
+	if ( ! $id ) {
+		$id = wp_insert_post( array(
+			'post_type' => 'page',
+			'post_status' => 'publish',
+			'post_title' => __( 'Wishlist', 'purple-optimize-toolkit' ),
+			'post_name' => 'wishlist',
+			'post_content' => '<!-- wp:shortcode -->[purple_optimize_wishlist]<!-- /wp:shortcode -->',
+		), true );
+	}
+	if ( ! is_wp_error( $id ) && $id ) {
+		update_option( 'pot_wishlist_page_id', (int) $id );
+	}
+}
+add_action( 'admin_init', 'pot_ensure_wishlist_page' );
+add_action( 'update_option_pot_settings', 'pot_ensure_wishlist_page' );
 
 /**
  * Wishlist page shortcode. Client-side rendering avoids storing guest PII.

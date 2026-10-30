@@ -37,9 +37,9 @@ test('child requirements do not understate the parent requirements', () => {
 	}
 });
 
-test('child mobile navigation resolves to a registered parent overlay', () => {
-	const header = fs.readFileSync(path.join(child, 'parts/header.html'), 'utf8');
-	const navigation = JSON.parse(header.match(/<!-- wp:navigation (\{.*?\}) \/-->/)[1]);
+test('inherited mobile navigation resolves to a registered parent overlay', () => {
+	const header = fs.readFileSync(path.join(parent, 'parts/header.html'), 'utf8');
+	const navigation = [...header.matchAll(/<!-- wp:navigation (\{.*?\}) \/-->/g)].map((match) => JSON.parse(match[1])).find((attrs) => attrs.overlay);
 	const parts = JSON.parse(fs.readFileSync(path.join(parent, 'theme.json'), 'utf8')).templateParts;
 	assert.ok(parts.some((part) => part.name === navigation.overlay && part.area === 'navigation-overlay'));
 	assert.ok(fs.existsSync(path.join(parent, 'parts', `${navigation.overlay}.html`)));

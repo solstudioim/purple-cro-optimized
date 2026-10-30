@@ -3,21 +3,17 @@ Contributors: solstudioim
 Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.5.14
+Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A conversion-focused WooCommerce child theme with restrained product, catalog, cart, and checkout layouts.
+A WooCommerce child theme that preserves Purple appearance and adds companion setup.
 
 == Description ==
 
-Purple Optimize is a block child theme for Woo's Purple theme. It provides a
-warm editorial design system and focused layouts for the homepage, product
-catalog, product detail, cart, and checkout journeys.
-
-The theme contains presentation only. Optional conversion functionality is
-maintained separately in the Purple Optimize Toolkit plugin and is not bundled
-with this theme.
+Purple Optimize inherits Purple templates, parts, patterns, colors and typography.
+Optional conversion elements live in the separate Purple Optimize Toolkit plugin.
+Existing CRO feature defaults and saved choices remain intact.
 
 == Installation ==
 
@@ -43,25 +39,13 @@ https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 == Changelog ==
 
-= 0.5.14 =
-* Add explicit companion setup and automatic local version checks.
-* Preserve the native desktop checkout button and fit longer mobile store titles.
-
-* Align with Purple 1.0.3 from the WooCommerce monorepo.
-* Follow the parent navigation overlay and product gallery controls.
-* Require WordPress 7.1 and recommend WooCommerce 11.1 or newer.
-
+= 0.6.0 (local preview) =
+* Inherit parent templates and styling without child overrides.
+* Pair with toolkit 0.11.4 for functional conversion elements styled with parent tokens.
+* Keep older Purple versions advisory so testing remains possible.
 
 = 0.5.14 =
-* Add explicit companion setup and automatic local version checks.
-* Preserve the native desktop checkout button and fit longer mobile store titles.
-
-* Added WordPress.org release metadata, documentation, and upstream attribution.
-* Documented the separate parent-theme and plugin dependencies.
-
-= 0.5.11 =
-* Centered product notices and decision content in one restrained container.
-* Improved single-product layout consistency.
+* Add explicit companion setup and compatibility checks.
 
 == Copyright ==
 
@@ -73,6 +57,6 @@ Purple is distributed under the terms of the GNU GPL.
 Source: https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
 
 Theme screenshot
-Author: Sol Studio
-License: CC0 1.0 Universal
-License URI: https://creativecommons.org/publicdomain/zero/1.0/
+Inherited Purple preview, (C) 2026 Automattic
+Source: https://github.com/woocommerce/woocommerce/tree/trunk/themes/purple
+License: GPLv2 or later (see parent readme for image credits).

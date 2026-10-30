@@ -75,7 +75,8 @@ try {
 	const panel = front.locator('.pot-checkout-content');
 	await panel.getByRole('heading', { name: 'Helpful delivery information' }).waitFor();
 	assert.deepEqual(await panel.locator('strong').evaluate(el => ({ weight: getComputedStyle(el).fontWeight, font: getComputedStyle(el.parentElement).fontSize, color: getComputedStyle(el.parentElement).color })), boldStyle);
-	assert.equal(boldStyle.weight, '700');
+	const paragraphWeight = await panel.locator('strong').evaluate(el => getComputedStyle(el.parentElement).fontWeight);
+	assert.ok(Number(boldStyle.weight) > Number(paragraphWeight), 'Strong text follows the parent font and remains heavier than its paragraph.');
 	const customStyle = el => ({ color: getComputedStyle(el).color, size: getComputedStyle(el).fontSize, align: getComputedStyle(el).textAlign });
 	const frontCustom = await panel.getByText('Custom text styling', { exact: true }).evaluate(customStyle);
 	const editorCustom = await editor.getByText('Custom text styling', { exact: true }).evaluate(customStyle);

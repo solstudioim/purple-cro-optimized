@@ -1,0 +1,54 @@
+/** Local-only wishlist toolbar round trip, with original settings restored. */
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+assert.ok(process.env.POT_WP_PATH && process.env.POT_ARTIFACTS);
+const wp = (code) => execFileSync(process.env.POT_PHP || 'php', ['-d','error_reporting=22527','/usr/local/bin/wp','eval',code,`--path=${process.env.POT_WP_PATH}`], { encoding: 'utf8' }).trim();
+const site = wp('echo home_url();');
+assert.match(new URL(site).hostname, /^(localhost|127\.0\.0\.1)$/);
+mkdirSync(process.env.POT_ARTIFACTS, { recursive: true });
+const original = wp('echo base64_encode(serialize(array(get_option("pot_settings"),get_option("pot_wishlist_page_id",null))));');
+const fixture = Number(wp('$id=wp_insert_post(array("post_type"=>"page","post_status"=>"publish","post_title"=>"Local saved items","post_name"=>"local-saved-items","post_content"=>"<!-- wp:shortcode -->[purple_optimize_wishlist]<!-- /wp:shortcode -->")); update_option("pot_wishlist_page_id",$id); echo $id;'));
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+const page = await context.newPage();
+const errors = [];
+page.on('pageerror', (error) => errors.push(error.message));
+try {
+ wp('$s=pot_defaults(); $s["wishlist"]=1; $s["promo_enabled"]=1; $s["promo_text"]="Local promotion test"; update_option("pot_settings",$s);');
+ const product = wp('$p=wc_get_products(array("type"=>"simple","status"=>"publish","limit"=>1))[0];echo get_permalink($p->get_id());');
+ await page.goto(product, { waitUntil: 'networkidle' });
+ await page.getByText('Local promotion test', { exact: true }).waitFor();
+ assert.equal(await page.locator('.pot-wishlist-count').innerText(), '0');
+ await page.locator('.pot-wishlist-button').click();
+ assert.equal(await page.locator('.pot-wishlist-count').innerText(), '1');
+ const saved = await page.locator('.pot-wishlist-link').getAttribute('href');
+ assert.match(saved, /local-saved-items/);
+ await page.locator('.pot-wishlist-link').click();
+ await page.locator('.pot-wishlist-card').waitFor();
+ assert.equal(await page.locator('.pot-wishlist-count').innerText(), '1');
+ await page.screenshot({ path: `${process.env.POT_ARTIFACTS}/wishlist-mobile.png`, fullPage: true });
+ await page.locator('[data-remove]').click();
+ assert.equal(await page.locator('.pot-wishlist-count').innerText(), '0');
+ assert.equal(await page.locator('.pot-wishlist-card').count(), 0);
+ wp('$s=pot_settings();$s["promo_enabled"]=0;update_option("pot_settings",$s);');
+ await page.goto(site, { waitUntil: 'networkidle' });
+ assert.equal(await page.locator('.pot-wishlist-link').count(), 1, 'Wishlist access survives a disabled promotion');
+ assert.equal(await page.getByText('Local promotion test', { exact: true }).count(), 0);
+ const other = await context.newPage();
+ await other.goto(product, { waitUntil: 'networkidle' });
+ await other.locator('.pot-wishlist-button').click();
+ await page.waitForFunction(() => document.querySelector('.pot-wishlist-count')?.textContent === '1');
+ await other.close();
+ wp('$s=pot_settings();$s["wishlist"]=0;$s["promo_enabled"]=1;update_option("pot_settings",$s);');
+ await page.goto(site, { waitUntil: 'networkidle' });
+ await page.getByText('Local promotion test', { exact: true }).waitFor();
+ assert.equal(await page.locator('.pot-wishlist-link').count(), 0);
+ assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+ assert.deepEqual(errors, []);
+ console.log('PASS: promotion, wishlist count, save -> toolbar link -> saved items -> remove, independent toggles, custom page URL, cross-tab count and mobile width.');
+} finally {
+ wp(`$v=unserialize(base64_decode('${original}'));update_option('pot_settings',$v[0]);if(null===$v[1]){delete_option('pot_wishlist_page_id');}else{update_option('pot_wishlist_page_id',$v[1]);}wp_delete_post(${fixture},true);`);
+ await browser.close();
+}

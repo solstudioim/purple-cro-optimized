@@ -10,7 +10,7 @@ $expect = static function ( $condition, $message ) {
 };
 $expect( function_exists( 'pot_render_workspace' ), 'Companion plugin must be active.' );
 $expect( 'purple-optimize' === get_stylesheet() && 'purple' === get_template(), 'Activate the child with its parent for combined checks.' );
-$expect( ! in_array( false, array_column( pot_environment_checks(), 'ok' ), true ), 'Combined version requirements must pass.' );
+$expect( purple_optimize_environment_ready( pot_environment_checks() ), 'Combined version requirements must pass.' );
 $original = get_option( 'pot_settings', null );
 $checkout = get_option( 'pot_checkout_settings', null );
 $post     = $_POST;
@@ -20,7 +20,23 @@ wp_set_current_user( $admin->ID );
 pot_register_settings();
 try {
 	$settings = pot_defaults();
+	$disabled = $settings;
+	foreach ( array( 'promo_enabled', 'instant_search', 'category_navigation', 'checkout_trust', 'footer_policies', 'post_purchase_account', 'wishlist', 'sticky_cart', 'mobile_sticky_checkout', 'sale_percentage', 'product_guidance', 'checkout_labels', 'free_shipping_threshold' ) as $key ) { $disabled[ $key ] = 0; }
+	$expect( ! in_array( true, pot_frontend_feature_flags( $disabled ), true ), 'Explicitly disabled features must enqueue no enhancements.' );
+	foreach ( array( 'category_navigation', 'footer_policies', 'sale_percentage' ) as $feature ) {
+		$standalone = $disabled;
+		$standalone[ $feature ] = 1;
+		$expect( pot_frontend_feature_flags( $standalone )['components'], $feature . ' needs its component styles when enabled alone.' );
+	}
+	$expect( ! is_dir( get_stylesheet_directory() . '/templates' ) && ! is_dir( get_stylesheet_directory() . '/parts' ), 'Child must inherit parent layouts.' );
 	$settings['promo_text'] = 'Keep my promotion';
+	$settings['promo_background'] = '#d4af37';
+	$expect( '#ffffff' === pot_promo_text_color( '#000' ), 'Dark backgrounds require white text.' );
+	$expect( '#000000' === pot_promo_text_color( '#fff' ), 'Light backgrounds require black text.' );
+	$invalid_color = pot_sanitize_settings( array_merge( $settings, array( 'promo_background' => 'red;position:fixed' ) ) );
+	$expect( '' === $invalid_color['promo_background'], 'Custom background must reject CSS injection.' );
+	$invalid_color = pot_sanitize_settings( array_merge( $settings, array( 'promo_background' => array( '#fff' ) ) ) );
+	$expect( '' === $invalid_color['promo_background'], 'Malformed background must fall back to the parent theme.' );
 	$settings['offer_funnel'] = 1;
 	$settings['upsell_discount'] = 23;
 	$settings['recent_sales'] = 1;
@@ -57,14 +73,14 @@ try {
 	wp_set_current_user( 0 );
 	ob_start(); pot_render_workspace(); $html = ob_get_clean();
 	$expect( '' === $html, 'Anonymous users may not view settings.' );
-	// Resolve all child-owned blocks against the actual WordPress/WooCommerce registry.
+	// Resolve all inherited parent blocks against the actual WordPress/WooCommerce registry.
 	$walk = static function ( $blocks ) use ( &$walk, $expect ) {
 		foreach ( $blocks as $block ) {
 			if ( ! empty( $block['blockName'] ) ) { $expect( WP_Block_Type_Registry::get_instance()->is_registered( $block['blockName'] ), 'Unregistered block: ' . $block['blockName'] ); }
 			$walk( $block['innerBlocks'] ?? array() );
 		}
 	};
-	foreach ( array_merge( glob( get_stylesheet_directory() . '/templates/*.html' ), glob( get_stylesheet_directory() . '/parts/*.html' ) ) as $file ) { $walk( parse_blocks( file_get_contents( $file ) ) ); }
+	foreach ( array_merge( glob( get_template_directory() . '/templates/*.html' ), glob( get_template_directory() . '/parts/*.html' ) ) as $file ) { $walk( parse_blocks( file_get_contents( $file ) ) ); }
 	WP_CLI::success( 'Combined version checks, six workspace sections, scoped saves, unrelated settings preservation, nonce rejection, access control, preview rendering and registered blocks passed.' );
 } finally {
 	$_POST = array();

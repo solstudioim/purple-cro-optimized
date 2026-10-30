@@ -5,6 +5,13 @@
 - Run relevant automated checks and verify the combined parent + child + companion experience on supported WordPress and WooCommerce versions. Preserve existing merchant settings.
 - Report parent, child, and companion verification separately. Passing theme checks alone does not establish companion compatibility; explicitly identify any untested flows or version limitations.
 
+## Preserve CRO functionality while inheriting Purple styling
+
+- Parent-alignment changes must retain conversion features, original feature defaults, saved merchant settings, and shopper flows. Remove unnecessary palette, typography, global CSS, and layout overrides; do not disable functionality to achieve visual parity.
+- Compare parent appearance with enhancements explicitly disabled only in the test fixture. Separately test enabled promotion/wishlist, offers in all placements, checkout add-ons and published helpful content through real browser journeys.
+- Offer regressions must include a real signed-in shopper and a guest, stale session state, unchanged-cart decisions, new/changed carts, and accepted-offer loop prevention. Guest-only success is insufficient.
+- Include staging's WooCommerce/Gutenberg versions and delayed extension-script delivery in checkout regression tests. Settings/API success alone does not prove a hydrated checkout component works.
+
 <!-- BEGIN AUTOMEM CODEX RULES -->
 <!-- automem-template-version: 0.15.0 -->
 

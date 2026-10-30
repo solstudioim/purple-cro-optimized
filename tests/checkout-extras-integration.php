@@ -73,6 +73,8 @@ try {
 		'content' => '<h3>Helpful checkout information</h3><p>Review delivery and returns before placing your order.</p><ul><li>Delivery details at checkout</li><li>Contact our team for help</li></ul>' . ( $images ? wp_get_attachment_image( $images[0], 'medium', false, array( 'alt' => 'Checkout test image' ) ) : '' ),
 	);
 	update_option( 'pot_checkout_settings', $settings );
+	$integration = new POT_Checkout_Integration();
+	pot_checkout_expect( array( 'pot-checkout-extras' ) === $integration->get_script_handles(), 'Enabled features must declare their checkout integration dependency.' );
 	$sanitized = pot_sanitize_checkout_settings( array(
 		'upsells_enabled' => 1,
 		'upsells' => array( $rows[0], $rows[0], array( 'product_id' => array( 7 ) ), $rows[1], $rows[2] ),

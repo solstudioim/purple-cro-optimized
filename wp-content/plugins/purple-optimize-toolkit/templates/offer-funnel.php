@@ -30,7 +30,7 @@ $is_post_purchase = 'post_purchase' === ( $context['context'] ?? '' );
 	<?php wp_body_open(); ?>
 	<header class="pot-offer-header">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php bloginfo( 'name' ); ?></a>
-		<span><?php echo $is_post_purchase ? esc_html__( 'Order complete', 'purple-optimize-toolkit' ) : esc_html( sprintf( _n( '%d item reserved', '%d items reserved', WC()->cart->get_cart_contents_count(), 'purple-optimize-toolkit' ), WC()->cart->get_cart_contents_count() ) ); ?></span>
+		<span><?php echo $is_post_purchase ? esc_html__( 'Order complete', 'purple-optimize-toolkit' ) : esc_html( sprintf( _n( '%d item in your cart', '%d items in your cart', WC()->cart->get_cart_contents_count(), 'purple-optimize-toolkit' ), WC()->cart->get_cart_contents_count() ) ); ?></span>
 	</header>
 	<main class="pot-offer-shell">
 		<section class="pot-offer-card" aria-labelledby="pot-offer-title">
@@ -54,8 +54,8 @@ $is_post_purchase = 'post_purchase' === ( $context['context'] ?? '' );
 				<?php wc_print_notices(); ?>
 				<form class="pot-offer-actions" method="post">
 					<?php wp_nonce_field( 'pot_offer_' . $step, 'pot_offer_nonce' ); ?>
-					<button class="pot-offer-accept" type="submit" name="pot_offer_action" value="accept"><?php echo esc_html( $is_post_purchase ? __( 'Yes, add this in a new order', 'purple-optimize-toolkit' ) : ( $is_downsell ? __( 'Yes, add this and continue', 'purple-optimize-toolkit' ) : __( 'Yes, add this to my order', 'purple-optimize-toolkit' ) ) ); ?></button>
-					<button class="pot-offer-reject" type="submit" name="pot_offer_action" value="reject"><?php echo esc_html( $is_post_purchase ? __( 'No thanks, view my receipt', 'purple-optimize-toolkit' ) : ( $is_downsell ? __( 'No thanks, continue to checkout', 'purple-optimize-toolkit' ) : __( 'No thanks', 'purple-optimize-toolkit' ) ) ); ?></button>
+					<button class="pot-offer-accept wp-element-button" type="submit" name="pot_offer_action" value="accept"><?php echo esc_html( $is_post_purchase ? __( 'Yes, add this in a new order', 'purple-optimize-toolkit' ) : ( $is_downsell ? __( 'Yes, add this and continue', 'purple-optimize-toolkit' ) : __( 'Yes, add this to my order', 'purple-optimize-toolkit' ) ) ); ?></button>
+					<button class="pot-offer-reject wp-element-button" type="submit" name="pot_offer_action" value="reject"><?php echo esc_html( $is_post_purchase ? __( 'No thanks, view my receipt', 'purple-optimize-toolkit' ) : ( $is_downsell ? __( 'No thanks, continue to checkout', 'purple-optimize-toolkit' ) : __( 'No thanks', 'purple-optimize-toolkit' ) ) ); ?></button>
 				</form>
 				<p class="pot-offer-fine-print"><?php echo esc_html( $is_post_purchase ? __( 'Your completed order is unchanged. Accepting starts a separate checkout and creates a separate order.', 'purple-optimize-toolkit' ) : __( 'Your existing cart is unchanged unless you accept. Payment is completed securely on the next checkout page.', 'purple-optimize-toolkit' ) ); ?></p>
 			</div>

@@ -18,6 +18,7 @@ jobs:
           php-version: '7.4'
       - run: node --test tests/*.test.mjs
       - run: php tests/storefront-presentation-contracts.php
+      - run: php tests/parent-version-advisory.php
       - run: find wp-content/themes/purple wp-content/themes/purple-optimize wp-content/plugins/purple-optimize-toolkit -name '*.php' -print0 | xargs -0 -n1 php -l
       - run: git diff --check
       - run: python3 tools/build-packages.py --output "$RUNNER_TEMP/packages"
@@ -30,7 +31,7 @@ jobs:
     strategy:
       matrix:
         php: ['7.4', '8.3']
-        woo: ['11.1.0', 'latest']
+        woo: ['11.1.0', '11.2.1', 'latest']
     services:
       mysql:
         image: mysql:8.0
@@ -58,16 +59,18 @@ jobs:
           cp -R wp-content/themes/purple wp-content/themes/purple-optimize "$RUNNER_TEMP/site/wp-content/themes/"
           cp -R wp-content/plugins/purple-optimize-toolkit "$RUNNER_TEMP/site/wp-content/plugins/"
           if [ "$WOO_VERSION" = latest ]; then wp plugin install woocommerce --activate --path="$RUNNER_TEMP/site"; else wp plugin install woocommerce --version="$WOO_VERSION" --activate --path="$RUNNER_TEMP/site"; fi
+          if [ "$WOO_VERSION" = "11.2.1" ]; then wp plugin install gutenberg --version=24.3.0 --activate --path="$RUNNER_TEMP/site"; fi
           wp theme activate purple-optimize --path="$RUNNER_TEMP/site"
           wp plugin activate purple-optimize-toolkit --path="$RUNNER_TEMP/site"
           wp eval-file tests/companion-settings-integration.php --path="$RUNNER_TEMP/site"
           wp eval-file tests/checkout-extras-integration.php --path="$RUNNER_TEMP/site"
+          wp eval-file tests/wishlist-navigation-integration.php --path="$RUNNER_TEMP/site"
           wp eval-file tests/checkout-content-integration.php --path="$RUNNER_TEMP/site"
           wp wc hpos sync --path="$RUNNER_TEMP/site"
           wp option update woocommerce_custom_orders_table_enabled yes --path="$RUNNER_TEMP/site"
           wp eval-file tests/companion-settings-integration.php --path="$RUNNER_TEMP/site"
-      - name: Browser checks on the minimum supported WooCommerce
-        if: matrix.php == '8.3' && matrix.woo == '11.1.0'
+      - name: Browser checks on minimum and staging WooCommerce stacks
+        if: matrix.php == '8.3' && (matrix.woo == '11.1.0' || matrix.woo == '11.2.1')
         env:
           POT_WP_PATH: ${{ runner.temp }}/site
           POT_ARTIFACTS: ${{ runner.temp }}/browser-evidence
@@ -81,14 +84,27 @@ jobs:
           PHP_CLI_SERVER_WORKERS=4 wp server --host=127.0.0.1 --port=8888 --path="$POT_WP_PATH" > "$RUNNER_TEMP/browser-server.log" 2>&1 &
           for attempt in $(seq 1 30); do if curl --fail --silent http://localhost:8888/wp-login.php > /dev/null; then break; fi; sleep 1; done
           node tests/companion-settings.e2e.mjs
+          node tests/parent-native.e2e.mjs
+          node tests/wishlist-navigation.e2e.mjs
+          node tests/storefront-alignment.e2e.mjs
+          node tests/promotion-color.e2e.mjs
+          wp eval-file tests/checkout-extras-integration.php prepare --path="$POT_WP_PATH"
+          trap 'wp eval-file tests/checkout-extras-integration.php cleanup --path="$POT_WP_PATH"' EXIT
+          POT_DELAY_CHECKOUT_EXTRAS=1 node tests/checkout-extras.e2e.mjs
+          wp eval-file tests/offer-session-integration.php --path="$POT_WP_PATH"
+          node tests/offer-auth.e2e.mjs
+          node tests/offer-journey.e2e.mjs
+          wp eval-file tests/checkout-extras-integration.php cleanup --path="$POT_WP_PATH"
+          trap - EXIT
+          node tests/checkout-content.e2e.mjs
           python3 tools/build-packages.py --output "$RUNNER_TEMP/packages"
-          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.10.0.zip"
+          export POT_TOOLKIT_ZIP="$RUNNER_TEMP/packages/purple-optimize-toolkit-0.11.4.zip"
           export POT_DISPOSABLE_SITE=1
           node tests/companion-setup.e2e.mjs
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.php == '8.3' && matrix.woo == '11.1.0'
+        if: always() && matrix.php == '8.3' && (matrix.woo == '11.1.0' || matrix.woo == '11.2.1')
         with:
-          name: browser-evidence
+          name: browser-evidence-${{ matrix.woo }}
           path: |
             ${{ runner.temp }}/browser-evidence/
             ${{ runner.temp }}/browser-server.log

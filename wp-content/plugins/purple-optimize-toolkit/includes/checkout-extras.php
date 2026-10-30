@@ -254,7 +254,7 @@ add_action( 'woocommerce_blocks_loaded', 'pot_register_checkout_api' );
  * @since 0.8.0
  * @return void
  */
-function pot_register_checkout_blocks(): void {
+function pot_register_checkout_assets(): void {
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		return;
 	}
@@ -262,11 +262,33 @@ function pot_register_checkout_blocks(): void {
 	wp_set_script_translations( 'pot-checkout-extras', 'purple-optimize-toolkit' );
 	wp_register_style( 'pot-checkout-extras', POT_URL . 'assets/checkout-extras.css', array(), (string) filemtime( POT_PATH . 'assets/checkout-extras.css' ) );
 	wp_register_style( 'pot-checkout-content', POT_URL . 'assets/checkout-content.css', array(), (string) filemtime( POT_PATH . 'assets/checkout-content.css' ) );
+}
+
+/** Register the automatically placed Checkout inner blocks. */
+function pot_register_checkout_blocks(): void {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+	pot_register_checkout_assets();
 	foreach ( array( 'checkout-upsells', 'checkout-content' ) as $name ) {
 		register_block_type( POT_PATH . 'blocks/' . $name );
 	}
 }
 add_action( 'init', 'pot_register_checkout_blocks' );
+
+/**
+ * Make extension registration a dependency of checkout hydration.
+ *
+ * A block viewScript alone is deferred and may execute after checkout captures
+ * its available inner blocks, especially with Gutenberg and optimized delivery.
+ *
+ * @param \Automattic\WooCommerce\Blocks\Integrations\IntegrationRegistry $registry Checkout registry.
+ */
+function pot_register_checkout_integration( $registry ): void {
+	require_once POT_PATH . 'includes/class-checkout-integration.php';
+	$registry->register( new POT_Checkout_Integration() );
+}
+add_action( 'woocommerce_blocks_checkout_block_registration', 'pot_register_checkout_integration' );
 
 /**
  * Insert add-ons before the native checkout action and content after the summary.
